@@ -1,3 +1,6 @@
+package tracker.model;
+
+import tracker.controller.Manager;
 
 public class Task {
     protected String name;
@@ -11,7 +14,8 @@ public class Task {
     public Task(String name, String description, String status) {
         this.name = name;
         this.description = description;
-        this.id = Manager.ID++;
+        this.id = Manager.getID() + 1;
+        Manager.setID(this.id);
         this.status = status;
     }
 
@@ -41,7 +45,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "tracker.model.Task{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + getId() +

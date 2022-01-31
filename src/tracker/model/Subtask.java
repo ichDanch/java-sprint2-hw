@@ -1,14 +1,23 @@
-import java.util.ArrayList;
+package tracker.model;
+
+import tracker.controller.Manager;
+
 import java.util.Objects;
 
-public class Epic extends Task {
+public class Subtask extends Task {
 
-    ArrayList<Subtask> subtasksList = new ArrayList<>();
+    private int idParentEpic;
 
-    public Epic(String name, String description) {
+    public Subtask() {
+    }
+
+    public Subtask(String name, String description, String status, int idParentEpic) {
         this.name = name;
         this.description = description;
-        this.id = Manager.ID++;
+        this.id = Manager.getID() + 1;
+        Manager.setID(this.id);
+        this.status = status;
+        this.idParentEpic = idParentEpic;
     }
 
     @Override
@@ -32,45 +41,31 @@ public class Epic extends Task {
     }
 
     @Override
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    @Override
     public int getId() {
         return this.id;
     }
 
-    public void recalculateStatus() {
-        int countNew = 0;
-        int countDone = 0;
+    @Override
+    public void setId(int id) {
+        this.id = id;
+    }
 
-        for (Subtask element : subtasksList) {
-            if (element.status.equals("NEW")) {
-                countNew++;
-            } else if (element.status.equals("DONE")) {
-                countDone++;
-            }
-        }
+    public int getIdParentEpic() {
+        return idParentEpic;
+    }
 
-        if (subtasksList.size() == 0) {
-            status = "NEW";
-        } else if (countNew == subtasksList.size()) {
-            status = "NEW";
-        } else if (countDone == subtasksList.size()) {
-            status = "DONE";
-        } else {
-            status = "IN_PROGRESS";
-        }
+    public void setIdParentEpic(int idParentEpic) {
+        this.idParentEpic = idParentEpic;
     }
 
     @Override
     public String toString() {
-        return "Epic{" +
+        return "tracker.model.Subtask{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", id=" + getId() +
                 ", status=" + status +
+                ", idParentEpic=" + idParentEpic +
                 '}';
     }
 
@@ -78,8 +73,8 @@ public class Epic extends Task {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Epic epic = (Epic) o;
-        return this.getId() == epic.getId();
+        Subtask subtask = (Subtask) o;
+        return this.getId() == subtask.getId();
     }
 
     @Override
@@ -90,4 +85,3 @@ public class Epic extends Task {
         return result;
     }
 }
-
