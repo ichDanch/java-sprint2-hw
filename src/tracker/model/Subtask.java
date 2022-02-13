@@ -1,6 +1,6 @@
 package tracker.model;
 
-import tracker.controller.Manager;
+import tracker.controller.InMemoryTaskManager;
 
 import java.util.Objects;
 
@@ -11,11 +11,11 @@ public class Subtask extends Task {
     public Subtask() {
     }
 
-    public Subtask(String name, String description, String status, int idParentEpic) {
+    public Subtask(String name, String description, Status status, int idParentEpic) {
         this.name = name;
         this.description = description;
-        this.id = Manager.getID() + 1;
-        Manager.setID(this.id);
+        this.id = InMemoryTaskManager.getID() + 1;
+        InMemoryTaskManager.setID(this.id);
         this.status = status;
         this.idParentEpic = idParentEpic;
     }

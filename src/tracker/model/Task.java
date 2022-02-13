@@ -1,21 +1,21 @@
 package tracker.model;
 
-import tracker.controller.Manager;
+import tracker.controller.InMemoryTaskManager;
 
 public class Task {
     protected String name;
     protected String description;
     protected int id;
-    protected String status;
+    protected Status status;
 
     public Task() {
     }
 
-    public Task(String name, String description, String status) {
+    public Task(String name, String description, Status status) {
         this.name = name;
         this.description = description;
-        this.id = Manager.getID() + 1;
-        Manager.setID(this.id);
+        this.id = InMemoryTaskManager.getID() + 1;
+        InMemoryTaskManager.setID(this.id);
         this.status = status;
     }
 

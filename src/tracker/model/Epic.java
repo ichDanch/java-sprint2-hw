@@ -1,6 +1,6 @@
 package tracker.model;
 
-import tracker.controller.Manager;
+import tracker.controller.InMemoryTaskManager;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -12,8 +12,8 @@ public class Epic extends Task {
     public Epic(String name, String description) {
         this.name = name;
         this.description = description;
-        this.id = Manager.getID() + 1;
-        Manager.setID(this.id);
+        this.id = InMemoryTaskManager.getID() + 1;
+        InMemoryTaskManager.setID(this.id);
     }
 
     public Epic(String name, String description, int id) {
@@ -61,21 +61,21 @@ public class Epic extends Task {
         int countDone = 0;
 
         for (Subtask element : subtasksList) {
-            if (element.status.equals("NEW")) {
+            if (element.status == Status.NEW) {
                 countNew++;
-            } else if (element.status.equals("DONE")) {
+            } else if (element.status == Status.DONE) {
                 countDone++;
             }
         }
 
         if (subtasksList.size() == 0) {
-            status = "NEW";
+            status = Status.NEW;
         } else if (countNew == subtasksList.size()) {
-            status = "NEW";
+            status = Status.NEW;
         } else if (countDone == subtasksList.size()) {
-            status = "DONE";
+            status = Status.DONE;
         } else {
-            status = "IN_PROGRESS";
+            status = Status.IN_PROGRESS;
         }
     }
 
