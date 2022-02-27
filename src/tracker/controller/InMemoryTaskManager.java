@@ -4,73 +4,73 @@ import tracker.model.Epic;
 import tracker.model.Subtask;
 import tracker.model.Task;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class InMemoryTaskManager implements TaskManager {
 
-    static int ID;
+    static long ID;
 
-    private HistoryManager historyManager;
+    private final HistoryManager historyManager;
 
-    HashMap<Integer, Task> tasks = new HashMap<>();
-    HashMap<Integer, Epic> epics = new HashMap<>();
-    HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    HashMap<Long, Task> tasks = new HashMap<>();
+    HashMap<Long, Epic> epics = new HashMap<>();
+    HashMap<Long, Subtask> subtasks = new HashMap<>();
 
     public InMemoryTaskManager() {
-
+        historyManager = new InMemoryHistoryManager();
     }
 
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.historyManager = historyManager;
     }
 
-    public static int getID() {
+    public static long getID() {
         return ID;
     }
 
-    public static void setID(int ID) {
+    public static void setID(long ID) {
         InMemoryTaskManager.ID = ID;
     }
 
 
     @Override
-    public Task getTask(Integer id) {
+    public Task getTask(long id) {
         historyManager.add(tasks.get(id));
 
         return tasks.get(id);
     }
 
     @Override
-    public Epic getEpic(Integer id) {
+    public Epic getEpic(long id) {
         historyManager.add(epics.get(id));
 
         return epics.get(id);
     }
 
     @Override
-    public Subtask getSubtask(Integer id) {
+    public Subtask getSubtask(long id) {
         historyManager.add(subtasks.get(id));
         return subtasks.get(id);
     }
 
 
     @Override
-    public Integer createTask(Task task) {
+    public long createTask(Task task) {
         tasks.put(task.getId(), task);
 
         return task.getId();
     }
 
     @Override
-    public Integer createEpic(Epic epic) {
+    public long createEpic(Epic epic) {
         epics.put(epic.getId(), epic);
 
         return epic.getId();
     }
 
     @Override
-    public Integer createSubtask(Subtask subtask) {
+    public long createSubtask(Subtask subtask) {
         //поместить subtask в список последнего epica
         epics.get(subtask.getIdParentEpic()).getSubtasksList().add(subtask);
         //пересчитать статус
@@ -94,7 +94,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Subtask> getAllSubtasksParentEpic(int idParentEpic) {
+    public ArrayList<Subtask> getAllSubtasksParentEpic(long idParentEpic) {
         return epics.get(idParentEpic).getSubtasksList();
     }
 
@@ -144,32 +144,42 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void removeByIdTask(int id) {
+    public void removeTask(long id) {
+        historyManager.remove(id);
         tasks.remove(id);
     }
 
     @Override
-    public void removeByIdEpic(int id) {
+    public void removeEpic(long id) {
         // удалить из subtasks объекты, находящиеся в ArrayList удаляемого епика
         ArrayList<Subtask> list = epics.get(id).getSubtasksList();
         for (Subtask element : list) {
             if (subtasks.containsValue(element)) {
                 subtasks.remove(element.getId());
+                historyManager.remove(element.getId());
             }
         }
+        historyManager.remove(id);
         epics.remove(id);
+
     }
 
     @Override
-    public void removeByIdSubtask(int id) {
+    public void removeSubtask(long id) {
         // удалить subtask по переданному id из Arraylist epica
         // написал через for и if, idea предложила заменить на такую конструкцию
         for (Epic value : epics.values()) {
             value.getSubtasksList().removeIf(subtask -> subtask.getId() == id);
         }
         epics.get(subtasks.get(id).getIdParentEpic()).recalculateStatus();
+        historyManager.remove(id);
         subtasks.remove(id);
     }
+
+    public HistoryManager getHistoryManager() {
+        return historyManager;
+    }
+
 
     @Override
     public String toString() {

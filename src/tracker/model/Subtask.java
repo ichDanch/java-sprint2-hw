@@ -6,12 +6,12 @@ import java.util.Objects;
 
 public class Subtask extends Task {
 
-    private int idParentEpic;
+    private long idParentEpic;
 
     public Subtask() {
     }
 
-    public Subtask(String name, String description, Status status, int idParentEpic) {
+    public Subtask(String name, String description, Status status, long idParentEpic) {
         this.name = name;
         this.description = description;
         this.id = InMemoryTaskManager.getID() + 1;
@@ -41,20 +41,20 @@ public class Subtask extends Task {
     }
 
     @Override
-    public int getId() {
+    public long getId() {
         return this.id;
     }
 
     @Override
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 
-    public int getIdParentEpic() {
+    public long getIdParentEpic() {
         return idParentEpic;
     }
 
-    public void setIdParentEpic(int idParentEpic) {
+    public void setIdParentEpic(long idParentEpic) {
         this.idParentEpic = idParentEpic;
     }
 
