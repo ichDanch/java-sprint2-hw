@@ -4,16 +4,16 @@ import tracker.model.Task;
 
 import java.util.*;
 
-public class InMemoryHistoryManager<T> implements HistoryManager {
+public class InMemoryHistoryManager implements HistoryManager {
 
     private Map<Long, Node> history = new HashMap<>();
 
-    private Node<T> head;
-    private Node<T> tail;
+    private Node head;
+    private Node tail;
 
     private void linkLast(Task task) {
-        final Node<T> oldTail = tail;
-        final Node<T> newNode = new Node(oldTail, task, null);
+        final Node oldTail = tail;
+        final Node newNode = new Node(oldTail, task, null);
         tail = newNode;
         if (oldTail == null) {
             head = newNode;
@@ -23,8 +23,8 @@ public class InMemoryHistoryManager<T> implements HistoryManager {
     }
 
     private void removeNode(Node node) {
-        Node<T> nextNode = node.next;
-        Node<T> prevNode = node.prev;
+        Node nextNode = node.next;
+        Node prevNode = node.prev;
 
         if (nextNode == null) {
             tail = prevNode;
@@ -38,18 +38,6 @@ public class InMemoryHistoryManager<T> implements HistoryManager {
         } else {
             prevNode.next = nextNode;
             node.prev = null;
-        }
-    }
-
-    class Node<E> {
-        private Task data;
-        private Node<E> next;
-        private Node<E> prev;
-
-        public Node(Node<E> prev, Task data, Node<E> next) {
-            this.data = data;
-            this.next = next;
-            this.prev = prev;
         }
     }
 
@@ -73,7 +61,7 @@ public class InMemoryHistoryManager<T> implements HistoryManager {
     @Override
     public List<Task> getHistory() {
         List<Task> tasks = new ArrayList<>();
-        Node<T> node = head;
+        Node node = head;
         while (node != null) {
             tasks.add(node.data);
             node = node.next;
@@ -82,6 +70,17 @@ public class InMemoryHistoryManager<T> implements HistoryManager {
     }
 }
 
+class Node {
+    protected Task data;
+    protected Node next;
+    protected Node prev;
+
+    public Node(Node prev, Task data, Node next) {
+        this.data = data;
+        this.next = next;
+        this.prev = prev;
+    }
+}
 
 
 
