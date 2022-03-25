@@ -16,7 +16,7 @@ public class Epic extends Task {
         InMemoryTaskManager.setID(this.id);
     }
 
-    public Epic(String name, String description, long id) {
+    public Epic(String name, String description, int id) {
         this.name = name;
         this.description = description;
         this.id = id;
@@ -43,12 +43,12 @@ public class Epic extends Task {
     }
 
     @Override
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
     @Override
-    public long getId() {
+    public int getId() {
         return this.id;
     }
 

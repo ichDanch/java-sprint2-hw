@@ -6,7 +6,7 @@ import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
-    private Map<Long, Node> history = new HashMap<>();
+    protected Map<Integer, Node> history = new HashMap<Integer, Node>();
 
     private Node head;
     private Node tail;
@@ -51,7 +51,7 @@ public class InMemoryHistoryManager implements HistoryManager {
     }
 
     @Override
-    public void remove(long id) {
+    public void remove(int id) {
         if (history.containsKey(id)) {
             removeNode(history.get(id));
             history.remove(id);

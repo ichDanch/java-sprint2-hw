@@ -11,13 +11,13 @@ public class Main {
 
         InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
 
-        long a = inMemoryTaskManager.createTask(new Task("a", "", Status.DONE));
-        long b = inMemoryTaskManager.createTask(new Task("b", "", Status.NEW));
-        long c = inMemoryTaskManager.createEpic(new Epic("c", ""));
-        long ca = inMemoryTaskManager.createSubtask(new Subtask("ca", "", Status.NEW, c));
+        int a = inMemoryTaskManager.createTask(new Task("a", "", Status.DONE));
+        int b = inMemoryTaskManager.createTask(new Task("b", "", Status.NEW));
+        int c = inMemoryTaskManager.createEpic(new Epic("c", ""));
+        int ca = inMemoryTaskManager.createSubtask(new Subtask("ca", "", Status.NEW, c));
         long cb = inMemoryTaskManager.createSubtask(new Subtask("cb", "", Status.NEW, c));
         long cd = inMemoryTaskManager.createSubtask(new Subtask("cd", "", Status.NEW, c));
-        long d = inMemoryTaskManager.createEpic(new Epic("d", ""));
+        int d = inMemoryTaskManager.createEpic(new Epic("d", ""));
         System.out.println(inMemoryTaskManager.getTask(a));
         System.out.println(inMemoryTaskManager.getTask(b));
         System.out.println(inMemoryTaskManager.getEpic(c));
@@ -33,5 +33,6 @@ public class Main {
         inMemoryTaskManager.removeEpic(c);
         inMemoryTaskManager.removeTask(b);
         System.out.println(inMemoryTaskManager.getHistoryManager().getHistory());
+
     }
 }

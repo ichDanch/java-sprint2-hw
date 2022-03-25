@@ -5,7 +5,7 @@ import tracker.controller.InMemoryTaskManager;
 public class Task {
     protected String name;
     protected String description;
-    protected long id;
+    protected int id;
     protected Status status;
 
     public Task() {
@@ -35,12 +35,16 @@ public class Task {
         this.description = description;
     }
 
-    public long getId() {
+    public int getId() {
         return this.id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 
     @Override

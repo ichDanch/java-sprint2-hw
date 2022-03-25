@@ -8,11 +8,11 @@ import java.util.ArrayList;
 
 public interface TaskManager {
 
-    long createTask(Task task);
+    int createTask(Task task);
 
-    long createEpic(Epic epic);
+    int createEpic(Epic epic);
 
-    long createSubtask(Subtask subtask);
+    int createSubtask(Subtask subtask);
 
     // добавить subtask по id в epic по id
     void addSubtaskToEpic(int idEpic, int idSubtask);
@@ -23,11 +23,11 @@ public interface TaskManager {
 
     void removeAllTasks();
 
-    Task getTask(long id);
+    Task getTask(int id);
 
-    Epic getEpic(long id);
+    Epic getEpic(int id);
 
-    Subtask getSubtask(long id);
+    Subtask getSubtask(int id);
 
     void updateTask(Task task);
 
@@ -35,10 +35,10 @@ public interface TaskManager {
 
     void updateSubtask(Subtask subtask);
 
-    void removeTask(long id);
+    void removeTask(int id);
 
-    void removeEpic(long id);
+    void removeEpic(int id);
 
-    void removeSubtask(long id);
+    void removeSubtask(int id);
 
 }

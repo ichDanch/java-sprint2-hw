@@ -1,0 +1,5 @@
+1,TASK,task1,NEW,descriptionTask1
+2,TASK,task2,NEW,descriptionTask2
+3,EPIC,epic1,DONE,descriptionEpic1
+4,SUBTASK,subtask1,DONE,descriptionSubtask1,3
+   
