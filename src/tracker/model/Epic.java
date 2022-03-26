@@ -16,11 +16,21 @@ public class Epic extends Task {
         InMemoryTaskManager.setID(this.id);
     }
 
+    public Epic(String name, String description, Status status) {
+        this.name = name;
+        this.description = description;
+        this.id = InMemoryTaskManager.getID() + 1;
+        InMemoryTaskManager.setID(this.id);
+        this.status = status;
+    }
+
     public Epic(String name, String description, int id) {
         this.name = name;
         this.description = description;
         this.id = id;
     }
+
+
 
     @Override
     public String getName() {

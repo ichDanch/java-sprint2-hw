@@ -8,11 +8,11 @@ import java.util.ArrayList;
 
 public interface TaskManager {
 
-    int createTask(Task task);
+    int addTask(Task task);
 
-    int createEpic(Epic epic);
+    int addEpic(Epic epic);
 
-    int createSubtask(Subtask subtask);
+    int addSubtask(Subtask subtask);
 
     // добавить subtask по id в epic по id
     void addSubtaskToEpic(int idEpic, int idSubtask);
