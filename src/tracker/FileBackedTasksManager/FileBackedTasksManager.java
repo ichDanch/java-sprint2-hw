@@ -10,26 +10,28 @@ import tracker.model.Task;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class FileBackedTasksManager extends InMemoryTaskManager implements TaskManager {
+public class FileBackedTasksManager extends InMemoryTaskManager {
      File file = new File("save.csv");
 
     public static void main(String[] args) {
 
        FileBackedTasksManager fbtm = new FileBackedTasksManager("save.csv");
 
-   /*    int b = fbtm.addTask(new Task("task1", "descriptionTask1", Status.NEW));
+       /* int b = fbtm.addTask(new Task("task1", "descriptionTask1", Status.NEW));
         int m = fbtm.addTask(new Task("task2", "descriptionTask2", Status.NEW));
         int c = fbtm.addEpic(new Epic("epic1", "descriptionEpic1"));
         int ca = fbtm.addSubtask(new Subtask("subtask1", "descriptionSubtask1", Status.DONE, c));
         fbtm.getTask(b);
-        fbtm.getEpic(c);
+        fbtm.getEpic(c);*/
         fbtm.getAllTasks();
         System.out.println(fbtm.historyManager.getHistory());
-*/
+
         FileBackedTasksManager copy = new FileBackedTasksManager("save.csv");
         copy.getAllTasks();
         System.out.println(copy.historyManager.getHistory());
@@ -40,6 +42,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     public FileBackedTasksManager(String text) { // читаем файл
         setID(0);
         try (BufferedReader fileReader = new BufferedReader(new FileReader(text, StandardCharsets.UTF_8))) {
+
             boolean isHistory = false;
             while (fileReader.ready()) {
 
@@ -61,11 +64,11 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
                         Task task = fromStringToTask(anyTask);
                         Epic epic = fromStringToEpic(anyTask);
                         Subtask subtask = fromStringToSubtask(anyTask);
-                        if (task != null) {
+                        if (task != null && !tasks.containsKey(task.getId())) {
                             tasks.put(task.getId(), task);
-                        } else if (epic != null) {
+                        } else if (epic != null && !epics.containsKey(epic.getId())) {
                             epics.put(epic.getId(), epic);
-                        } else if (subtask != null) {
+                        } else if (subtask != null && !subtasks.containsKey(subtask.getId())) {
                             subtasks.put(subtask.getId(), subtask);
                         }
                     }
@@ -80,7 +83,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
     }
 
     public void save() {                           // пишем в файл
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("save.csv"))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("save.csv",false))) {
 
             for (Task task : tasks.values()) {
                 bw.write(taskToString(task));
@@ -102,7 +105,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
         String[] array = value.split(",");
 
-        if (array[1].equals(taskType.TASK.name())) {
+        if (array[1].equals(taskType.TASK.name()) && !tasks.containsKey(Integer.parseInt(array[0]))) {
             return new Task(array[2], array[4], Status.valueOf(array[3]));
         }
         return null;
@@ -112,7 +115,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
         String[] array = value.split(",");
 
-        if (array[1].equals(taskType.EPIC.name())) {
+        if (array[1].equals(taskType.EPIC.name()) && !epics.containsKey(Integer.parseInt(array[0]))) {
             return new Epic(array[2], array[4], Status.valueOf(array[3]));
         }
         return null;
@@ -122,7 +125,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager implements TaskM
 
         String[] array = value.split(",");
 
-        if (array[1].equals(taskType.SUBTASK.name())) {
+        if (array[1].equals(taskType.SUBTASK.name()) && !subtasks.containsKey(Integer.parseInt(array[0]))) {
             return new Subtask(array[2], array[4], Status.valueOf(array[3]), Integer.parseInt(array[5]));
         }
         return null;
