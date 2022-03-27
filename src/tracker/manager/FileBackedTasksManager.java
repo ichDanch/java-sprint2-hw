@@ -1,6 +1,6 @@
-package tracker.Manager;
+package tracker.manager;
 
-import tracker.Exception.ManagerSaveException;
+import tracker.exception.ManagerSaveException;
 import tracker.model.Epic;
 import tracker.model.Status;
 import tracker.model.Subtask;
@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
-
+    private File file;
     public static void main(String[] args) {
 
         /*
@@ -35,8 +35,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         В конструкторе его тоже не получается использовать, т.к. сначала нужно создать объект,
         а при создании объекта мы уже указываем путь. Получается только в методе save() его можно использовать.
         */
-
+        File file = new File("save.csv");
+        FileBackedTasksManager fb = new FileBackedTasksManager(file);
         FileBackedTasksManager fbtm = new FileBackedTasksManager("save.csv");
+
         int b = fbtm.addTask(new Task("task1", "descriptionTask1", Status.NEW));
         int m = fbtm.addTask(new Task("task2", "descriptionTask2", Status.NEW));
         int c = fbtm.addEpic(new Epic("epic1", "descriptionEpic1"));
@@ -49,6 +51,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         /*FileBackedTasksManager copy = new FileBackedTasksManager("save.csv");
         copy.getAllTasks();
         System.out.println(copy.historyManager.getHistory());*/
+    }
+    public FileBackedTasksManager(File file) {
+        this.file = file;
     }
 
     public FileBackedTasksManager(String text) { // читаем файл
@@ -99,7 +104,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     public void save() {                           // пишем в файл
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("save.csv", false))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, false))) {
             bw.write("id,type,name,status,description,epic\n");
 
             for (Task task : tasks.values()) {

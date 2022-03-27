@@ -1,12 +1,6 @@
 package tracker;
 
-import tracker.Manager.*;
-import tracker.model.Epic;
-import tracker.model.Status;
-import tracker.model.Subtask;
-import tracker.model.Task;
-
-import java.io.File;
+import tracker.manager.*;
 
 public class Main {
     public static void main(String[] args) {

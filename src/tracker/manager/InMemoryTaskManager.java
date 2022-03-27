@@ -1,4 +1,4 @@
-package tracker.Manager;
+package tracker.manager;
 
 import tracker.model.Epic;
 import tracker.model.Subtask;
