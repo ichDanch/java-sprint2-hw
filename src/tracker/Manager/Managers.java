@@ -1,4 +1,4 @@
-package tracker.controller;
+package tracker.Manager;
 
 public class Managers {
 

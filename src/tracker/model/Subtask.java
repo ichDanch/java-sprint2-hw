@@ -1,6 +1,6 @@
 package tracker.model;
 
-import tracker.controller.InMemoryTaskManager;
+import tracker.Manager.InMemoryTaskManager;
 
 import java.util.Objects;
 

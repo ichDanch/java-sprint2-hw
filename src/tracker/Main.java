@@ -1,15 +1,21 @@
 package tracker;
 
-import tracker.controller.*;
+import tracker.Manager.*;
 import tracker.model.Epic;
 import tracker.model.Status;
 import tracker.model.Subtask;
 import tracker.model.Task;
 
+import java.io.File;
+
 public class Main {
     public static void main(String[] args) {
 
-        InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
+        FileBackedTasksManager file = new FileBackedTasksManager("save.csv");
+        file.getAllTasks();
+        System.out.println(file.getHistoryManager().getHistory());
+
+        /*InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
 
         int a = inMemoryTaskManager.addTask(new Task("a", "", Status.DONE));
         int b = inMemoryTaskManager.addTask(new Task("b", "", Status.NEW));
@@ -33,6 +39,6 @@ public class Main {
         inMemoryTaskManager.removeEpic(c);
         inMemoryTaskManager.removeTask(b);
         System.out.println(inMemoryTaskManager.getHistoryManager().getHistory());
-
+*/
     }
 }

@@ -1,8 +1,6 @@
-package tracker.FileBackedTasksManager;
+package tracker.Manager;
 
-import tracker.controller.HistoryManager;
-import tracker.controller.InMemoryTaskManager;
-import tracker.controller.TaskManager;
+import tracker.Exception.ManagerSaveException;
 import tracker.model.Epic;
 import tracker.model.Status;
 import tracker.model.Subtask;
@@ -10,33 +8,47 @@ import tracker.model.Task;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
-     File file = new File("save.csv");
 
     public static void main(String[] args) {
 
-       FileBackedTasksManager fbtm = new FileBackedTasksManager("save.csv");
+        /*
+        Вечер добрый, Игорь!
+        Не знал где ответить на замечания, поэтому пишут тут.
 
-       /* int b = fbtm.addTask(new Task("task1", "descriptionTask1", Status.NEW));
+        При первом запуске менеджер присваивает задачам id и добавляет их в мапы. И пишет в файл.
+        При втором запуске он сначала восстанавливает задачи из файла.
+        А потом продолжает работу и видит создание новых задач, присваивает id (ID присваивается автоматом
+        в конуструкторе при выполнении new Task, new Epic и new Subtask) и добавляет
+        их в мапы и пишет в файл. Т.е. если создать таски и не закоменнтировать, то при каждом запуске кода
+        будут постоянно создаваться новые таски и записыватьс я в файл.
+
+        Попробовал и подругому проверить. В методе main класса FileBackedTasksManager создаю объект, таски и
+        добавляю просмотры в историю. В методе main класса Main создаю новый объект класса FileBackedTasksManager
+        и подгружаю сохраненный файл и смотрю, корректно ли всё добавилось.
+
+        file создавал для проверки метода loadFromFile(File file), нигде не использую его, удалил.
+        В конструкторе его тоже не получается использовать, т.к. сначала нужно создать объект,
+        а при создании объекта мы уже указываем путь. Получается только в методе save() его можно использовать.
+        */
+
+        FileBackedTasksManager fbtm = new FileBackedTasksManager("save.csv");
+        int b = fbtm.addTask(new Task("task1", "descriptionTask1", Status.NEW));
         int m = fbtm.addTask(new Task("task2", "descriptionTask2", Status.NEW));
         int c = fbtm.addEpic(new Epic("epic1", "descriptionEpic1"));
         int ca = fbtm.addSubtask(new Subtask("subtask1", "descriptionSubtask1", Status.DONE, c));
         fbtm.getTask(b);
-        fbtm.getEpic(c);*/
+        fbtm.getEpic(c);
         fbtm.getAllTasks();
         System.out.println(fbtm.historyManager.getHistory());
 
-        FileBackedTasksManager copy = new FileBackedTasksManager("save.csv");
+        /*FileBackedTasksManager copy = new FileBackedTasksManager("save.csv");
         copy.getAllTasks();
-        System.out.println(copy.historyManager.getHistory());
-
-
+        System.out.println(copy.historyManager.getHistory());*/
     }
 
     public FileBackedTasksManager(String text) { // читаем файл
@@ -49,6 +61,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 String[] line = fileReader.readLine().split("\n");
 
                 for (String anyTask : line) {
+                    if (anyTask.startsWith("id")) {
+                        continue;
+                    }
+
                     if (isHistory) {
                         List<Integer> list = FileBackedTasksManager.fromString(anyTask);
                         for (Integer element : list) {
@@ -83,7 +99,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     public void save() {                           // пишем в файл
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter("save.csv",false))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("save.csv", false))) {
+            bw.write("id,type,name,status,description,epic\n");
 
             for (Task task : tasks.values()) {
                 bw.write(taskToString(task));
@@ -105,7 +122,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         String[] array = value.split(",");
 
-        if (array[1].equals(taskType.TASK.name()) && !tasks.containsKey(Integer.parseInt(array[0]))) {
+        if (array[1].equals(TaskType.TASK.name())) {
             return new Task(array[2], array[4], Status.valueOf(array[3]));
         }
         return null;
@@ -115,9 +132,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         String[] array = value.split(",");
 
-        if (array[1].equals(taskType.EPIC.name()) && !epics.containsKey(Integer.parseInt(array[0]))) {
+        if (array[1].equals(TaskType.EPIC.name()) && array[3].equals("none")) {
+            return new Epic(array[2], array[4]);
+        } else if (array[1].equals(TaskType.EPIC.name())) {
             return new Epic(array[2], array[4], Status.valueOf(array[3]));
         }
+
         return null;
     }
 
@@ -125,9 +145,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         String[] array = value.split(",");
 
-        if (array[1].equals(taskType.SUBTASK.name()) && !subtasks.containsKey(Integer.parseInt(array[0]))) {
+        if (array[1].equals(TaskType.SUBTASK.name())) {
             return new Subtask(array[2], array[4], Status.valueOf(array[3]), Integer.parseInt(array[5]));
         }
+
         return null;
     }
 
@@ -159,7 +180,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     public String taskToString(Task task) {
         return task.getId() + ","
-                + taskType.TASK.name() + ","
+                + TaskType.TASK.name() + ","
                 + task.getName() + ","
                 + task.getStatus().name() + ","
                 + task.getDescription()
@@ -169,24 +190,24 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     public String epicToString(Epic epic) {
         if (epic.getStatus() != null) {
             return epic.getId() + ","
-                    + taskType.EPIC.name() + ","
+                    + TaskType.EPIC.name() + ","
                     + epic.getName() + ","
                     + epic.getStatus().name() + ","
                     + epic.getDescription()
                     + "\n";
         }
+
         return epic.getId() + ","
-                + taskType.EPIC.name() + ","
+                + TaskType.EPIC.name() + ","
                 + epic.getName() + ","
                 + "none" + ","
                 + epic.getDescription()
                 + "\n";
-
     }
 
     public String subtaskToString(Subtask subtask) {
         return subtask.getId() + ","
-                + taskType.SUBTASK.name() + ","
+                + TaskType.SUBTASK.name() + ","
                 + subtask.getName() + ","
                 + subtask.getStatus().name() + ","
                 + subtask.getDescription() + ","
@@ -194,7 +215,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                 + "\n";
     }
 
-    static FileBackedTasksManager loadFromFile(File file) {
+    public static FileBackedTasksManager loadFromFile(File file) {
         return new FileBackedTasksManager(file.getName());
     }
 
@@ -241,21 +262,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void addSubtaskToEpic(int idEpic, int idSubtask) {
-        super.addSubtaskToEpic(idEpic, idSubtask);
-    }
-
-    @Override
-    public void getAllTasks() {
-        super.getAllTasks();
-    }
-
-    @Override
-    public ArrayList<Subtask> getAllSubtasksParentEpic(long idParentEpic) {
-        return super.getAllSubtasksParentEpic(idParentEpic);
-    }
-
-    @Override
     public void removeAllTasks() {
         super.removeAllTasks();
         save();
@@ -296,21 +302,11 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         super.removeSubtask(id);
         save();
     }
-
-    @Override
-    public HistoryManager getHistoryManager() {
-        return super.getHistoryManager();
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
-    }
 }
 
-class ManagerSaveException extends RuntimeException {
+/*class ManagerSaveException extends RuntimeException {
 
     ManagerSaveException(String message) {
         super(message);
     }
-}
+}*/
