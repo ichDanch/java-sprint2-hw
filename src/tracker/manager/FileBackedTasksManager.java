@@ -17,8 +17,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     public static void main(String[] args) {
 
         /*
-        Вечер добрый, Игорь!
-        Не знал где ответить на замечания, поэтому пишут тут.
+        Устранить замечания прежде чем приступить к ФП6
 
         При первом запуске менеджер присваивает задачам id и добавляет их в мапы. И пишет в файл.
         При втором запуске он сначала восстанавливает задачи из файла.
@@ -104,7 +103,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     public void save() {                           // пишем в файл
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file, false))) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("save.csv", false))) {
             bw.write("id,type,name,status,description,epic\n");
 
             for (Task task : tasks.values()) {
