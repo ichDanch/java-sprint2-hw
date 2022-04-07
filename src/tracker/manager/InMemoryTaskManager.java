@@ -4,8 +4,7 @@ import tracker.model.Epic;
 import tracker.model.Subtask;
 import tracker.model.Task;
 
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
 
@@ -13,6 +12,8 @@ public class InMemoryTaskManager implements TaskManager {
 
     protected final HistoryManager historyManager;
 
+    protected ComparatorStartTime comparatorStartTime = new ComparatorStartTime();
+    protected TreeSet<Task> prioritizedTasks = new TreeSet<>(comparatorStartTime);
     protected HashMap<Integer, Task> tasks = new HashMap<Integer, Task>();
     protected HashMap<Integer, Epic> epics = new HashMap<Integer, Epic>();
     protected HashMap<Integer, Subtask> subtasks = new HashMap<Integer, Subtask>();
@@ -33,6 +34,17 @@ public class InMemoryTaskManager implements TaskManager {
         InMemoryTaskManager.ID = ID;
     }
 
+    static class ComparatorStartTime implements Comparator<Task> {
+
+        @Override
+        public int compare(Task task1, Task task2) {
+            if (task1.getStartTime().isPresent() && task2.getStartTime().isPresent()) {
+                return task1.getStartTime().get().compareTo(task2.getStartTime().get());
+            } else {
+                return 1;
+            }
+        }
+    }
 
     @Override
     public Task getTask(int id) {
@@ -56,24 +68,82 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     @Override
+    public TreeSet<Task> getPrioritizedTasks() {
+       /* prioritizedTasks.addAll(tasks.values());
+        prioritizedTasks.addAll(epics.values());
+        prioritizedTasks.addAll(subtasks.values());*/
+
+        return prioritizedTasks;
+    }
+
+    @Override
     public int addTask(Task task) {
         tasks.put(task.getId(), task);
+        prioritizedTasks.add(task);
+
+        for (Task element : getPrioritizedTasks()) {
+            if (task.getStartTime().isPresent()
+                    && element.getStartTime().isPresent()
+                    && task.getEndTime().isPresent()
+                    && element.getEndTime().isPresent()) {
+                if ((task.getStartTime().get().isAfter(element.getStartTime().get())
+                        && task.getStartTime().get().isBefore(element.getEndTime().get()))
+                        || (task.getEndTime().get().isAfter(element.getStartTime().get())
+                        && task.getEndTime().get().isBefore(element.getEndTime().get()))) {
+                    System.out.println(task.getName() + " "
+                            + task.getStartTime().get()
+                            + " " + task.getEndTime().get()
+                            + " пересекается с " + element.getName()
+                            + " " + element.getStartTime().get() + " " + element.getEndTime().get());
+                }
+            }
+        }
         return task.getId();
     }
 
     @Override
     public int addEpic(Epic epic) {
         epics.put(epic.getId(), epic);
+        prioritizedTasks.add(epic);
+        for (Task task : getPrioritizedTasks()) {
+            if (epic.getStartTime().isPresent()
+                    && task.getStartTime().isPresent()
+                    && epic.getEndTime().isPresent()
+                    && task.getEndTime().isPresent()) {
+                if (epic.getStartTime().get().isAfter(task.getStartTime().get())
+                        && epic.getStartTime().get().isBefore(task.getEndTime().get())) {
+                    System.out.println(epic.getName() + " "
+                            + epic.getStartTime().get()
+                            + " " + epic.getEndTime().get()
+                            + " пересекается с " + task.getName()
+                            + " " + task.getStartTime().get() + " " + task.getEndTime().get());
+                }
+            }
+        }
+
         return epic.getId();
     }
 
     @Override
     public int addSubtask(Subtask subtask) {
         //поместить subtask в список последнего epica
-        epics.get(subtask.getIdParentEpic()).getSubtasksList().add(subtask);
+        try {
+            epics.get(subtask.getIdParentEpic()).getSubtasksList().add(subtask);
+        } catch (NullPointerException e) {
+            System.out.println("Указан ID несуществующего эпика при создании сабтаска " + subtask.getName() +
+                    " и попытке поместить сабтаск в лист эпика");
+        }
+
         //пересчитать статус
-        epics.get(subtask.getIdParentEpic()).recalculateStatus();
+        try {
+            epics.get(subtask.getIdParentEpic()).recalculateStatus();
+        } catch (NullPointerException e) {
+            System.out.println("Указан ID несуществующего эпика при создании сабтаска " + subtask.getName() +
+                    " и попытке пересчитать статус эпика");
+        }
+
         subtasks.put(subtask.getId(), subtask);
+        prioritizedTasks.add(subtask);
 
         return subtask.getId();
     }
@@ -92,7 +162,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public ArrayList<Subtask> getAllSubtasksParentEpic(long idParentEpic) {
+    public ArrayList<Subtask> getAllSubtasksParentEpic(int idParentEpic) {
         return epics.get(idParentEpic).getSubtasksList();
     }
 
@@ -101,11 +171,14 @@ public class InMemoryTaskManager implements TaskManager {
         tasks.clear();
         epics.clear();
         subtasks.clear();
+        prioritizedTasks.clear();
     }
 
     @Override
     public void updateTask(Task task) {
         tasks.put(task.getId(), task);
+        prioritizedTasks.add(task);
+
     }
 
     @Override
@@ -119,6 +192,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         epic.recalculateStatus();
         epics.put(epic.getId(), epic);
+        prioritizedTasks.add(epic);
     }
 
     @Override
@@ -137,8 +211,8 @@ public class InMemoryTaskManager implements TaskManager {
         }
         // пересчитать статус EPICa
         epics.get(subtask.getIdParentEpic()).recalculateStatus();
-
         subtasks.put(subtask.getId(), subtask);
+        prioritizedTasks.add(subtask);
     }
 
     @Override

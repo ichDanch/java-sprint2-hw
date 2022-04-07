@@ -1,12 +1,17 @@
 package tracker.model;
 
+import com.sun.source.tree.IfTree;
 import tracker.manager.InMemoryTaskManager;
 
-import java.util.ArrayList;
-import java.util.Objects;
+import javax.swing.text.html.Option;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class Epic extends Task {
 
+    protected LocalDateTime endTime;
     private ArrayList<Subtask> subtasksList = new ArrayList<>();
 
     public Epic(String name, String description) {
@@ -14,6 +19,7 @@ public class Epic extends Task {
         this.description = description;
         this.id = InMemoryTaskManager.getID() + 1;
         InMemoryTaskManager.setID(this.id);
+
     }
 
     public Epic(String name, String description, Status status) {
@@ -30,7 +36,45 @@ public class Epic extends Task {
         this.id = id;
     }
 
+    @Override
+    public Optional<LocalDateTime> getEndTime() {
+        duration = Duration.ofMinutes(0);
+        for (Subtask element : subtasksList) {     // попробовать функц element.duration.ifPresent(value -> duration += value.);
+            if (element.duration != null) {         //  element.duration.ifPresent(temporaryDuration::plus);
+                duration = duration.plus(element.duration);
+            }
+        }
 
+        if (subtasksList.size() == 0) {
+            System.out.println("У эпика нету подзадач");
+            return Optional.empty();
+        }
+
+        ComparatorStartTime comparatorStartTime = new ComparatorStartTime();
+        subtasksList.sort(comparatorStartTime);
+
+        this.startTime = subtasksList.get(0).startTime;
+        if (startTime.isPresent()) {
+            this.endTime = startTime.get().plus(duration);
+        }
+        // тоже самое startTime.ifPresent(localDateTime -> this.endTime = localDateTime.plus(duration));
+
+
+        return Optional.ofNullable(this.endTime);
+    }
+
+    static class ComparatorStartTime implements Comparator<Subtask> {
+
+        @Override
+        public int compare(Subtask task1, Subtask task2) {
+            if (task1.startTime.isPresent() && task2.startTime.isPresent()) {
+                return task1.startTime.get().compareTo(task2.startTime.get());
+            } else {
+                return 1;
+            }
+
+        }
+    }
 
     @Override
     public String getName() {
@@ -91,11 +135,13 @@ public class Epic extends Task {
 
     @Override
     public String toString() {
-        return "tracker.model.Epic{" +
+        return "Epic{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", id=" + getId() +
+                ", id=" + id +
                 ", status=" + status +
+                ", duration=" + duration +
+                ", startTime=" + startTime +
                 '}';
     }
 

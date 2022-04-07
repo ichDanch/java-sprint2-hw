@@ -2,21 +2,50 @@ package tracker.model;
 
 import tracker.manager.InMemoryTaskManager;
 
+import javax.swing.text.html.Option;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.Optional;
+
 public class Task {
     protected String name;
     protected String description;
     protected int id;
     protected Status status;
+    protected Duration duration = Duration.ofMinutes(0);
+    protected Optional<LocalDateTime> startTime = Optional.empty();
+
+    protected DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
 
     public Task() {
     }
 
-    public Task(String name, String description, Status status) {
+    public Task(String name, String description, Status status, int duration, String startTime) {
         this.name = name;
         this.description = description;
         this.id = InMemoryTaskManager.getID() + 1;
         InMemoryTaskManager.setID(this.id);
         this.status = status;
+        this.duration = Duration.ofMinutes(duration);
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+    }
+
+    public Optional<LocalDateTime> getEndTime() {
+        Optional<Duration> durationOp = Optional.ofNullable(duration);
+        LocalDateTime endTimeOp = null;
+        if (startTime.isPresent()&& durationOp.isPresent()) {
+            endTimeOp = startTime.get().plus(durationOp.get());
+            return Optional.of(endTimeOp);
+        } else {
+            System.out.println("Не заданы startTime и duration задания");
+            return Optional.ofNullable(endTimeOp);
+        }
+    }
+
+    public Optional<LocalDateTime> getStartTime() {
+        return startTime;
     }
 
     public String getName() {
@@ -49,14 +78,15 @@ public class Task {
 
     @Override
     public String toString() {
-        return "tracker.model.Task{" +
+        return "Task{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", id=" + getId() +
+                ", id=" + id +
                 ", status=" + status +
+                ", duration=" + duration +
+                ", startTime=" + startTime +
                 '}';
     }
-
 }
 
 

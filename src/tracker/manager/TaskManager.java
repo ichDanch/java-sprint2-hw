@@ -5,8 +5,12 @@ import tracker.model.Subtask;
 import tracker.model.Task;
 
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.TreeSet;
 
 public interface TaskManager {
+
+    TreeSet<Task> getPrioritizedTasks();
 
     int addTask(Task task);
 
@@ -19,7 +23,7 @@ public interface TaskManager {
 
     void getAllTasks();
 
-    ArrayList<Subtask> getAllSubtasksParentEpic(long idParentEpic);
+    ArrayList<Subtask> getAllSubtasksParentEpic(int idParentEpic);
 
     void removeAllTasks();
 

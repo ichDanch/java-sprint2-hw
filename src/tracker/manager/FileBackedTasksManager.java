@@ -8,6 +8,8 @@ import tracker.model.Task;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,14 +40,14 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         FileBackedTasksManager fb = new FileBackedTasksManager(file);
         FileBackedTasksManager fbtm = new FileBackedTasksManager("save.csv");
 
-        int b = fbtm.addTask(new Task("task1", "descriptionTask1", Status.NEW));
+       /* int b = fbtm.addTask(new Task("task1", "descriptionTask1", Status.NEW));
         int m = fbtm.addTask(new Task("task2", "descriptionTask2", Status.NEW));
         int c = fbtm.addEpic(new Epic("epic1", "descriptionEpic1"));
         int ca = fbtm.addSubtask(new Subtask("subtask1", "descriptionSubtask1", Status.DONE, c));
         fbtm.getTask(b);
         fbtm.getEpic(c);
         fbtm.getAllTasks();
-        System.out.println(fbtm.historyManager.getHistory());
+        System.out.println(fbtm.historyManager.getHistory());*/
 
         /*FileBackedTasksManager copy = new FileBackedTasksManager("save.csv");
         copy.getAllTasks();
@@ -104,8 +106,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     public void save() {                           // пишем в файл
         try (BufferedWriter bw = new BufferedWriter(new FileWriter("save.csv", false))) {
-            bw.write("id,type,name,status,description,epic\n");
-
+            bw.write("id,type,name,status,description,epic,duration,startTime\n");
+                     //  [0]  [1]  [2]   [3]      [4]      [5]   [6]        [7]
             for (Task task : tasks.values()) {
                 bw.write(taskToString(task));
             }
@@ -127,7 +129,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String[] array = value.split(",");
 
         if (array[1].equals(TaskType.TASK.name())) {
-            return new Task(array[2], array[4], Status.valueOf(array[3]));
+            return new Task(
+                    array[2],
+                    array[4],
+                    Status.valueOf(array[3]),
+                    Integer.parseInt(array[6]),
+                    array[7]);
         }
         return null;
     }
@@ -150,7 +157,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         String[] array = value.split(",");
 
         if (array[1].equals(TaskType.SUBTASK.name())) {
-            return new Subtask(array[2], array[4], Status.valueOf(array[3]), Integer.parseInt(array[5]));
+            return new Subtask(
+                    array[2],
+                    array[4],
+                    Status.valueOf(array[3]),
+                    Integer.parseInt(array[5]),
+                    Integer.parseInt(array[6]),
+                    array[7]);
         }
 
         return null;

@@ -2,7 +2,10 @@ package tracker.model;
 
 import tracker.manager.InMemoryTaskManager;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 public class Subtask extends Task {
 
@@ -11,13 +14,27 @@ public class Subtask extends Task {
     public Subtask() {
     }
 
-    public Subtask(String name, String description, Status status, int idParentEpic) {
+    public Subtask(String name, String description, Status status, int idParentEpic, int duration, String startTime) {
         this.name = name;
         this.description = description;
         this.id = InMemoryTaskManager.getID() + 1;
         InMemoryTaskManager.setID(this.id);
         this.status = status;
         this.idParentEpic = idParentEpic;
+        this.duration = Duration.ofMinutes(duration);
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+    }
+
+    public Optional<LocalDateTime> getEndTime() {
+        Optional<Duration> durationOp = Optional.ofNullable(duration);
+        LocalDateTime endTimeOp = null;
+        if (startTime.isPresent()&& durationOp.isPresent()) {
+            endTimeOp = startTime.get().plus(durationOp.get());
+            return Optional.of(endTimeOp);
+        } else {
+            System.out.println("Не заданы startTime и duration задания");
+            return Optional.ofNullable(endTimeOp);
+        }
     }
 
     @Override
@@ -60,12 +77,14 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
-        return "tracker.model.Subtask{" +
-                "name='" + name + '\'' +
+        return "Subtask{" +
+                ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", id=" + getId() +
+                ", id=" + id +
                 ", status=" + status +
                 ", idParentEpic=" + idParentEpic +
+                ", duration=" + duration +
+                ", startTime=" + startTime +
                 '}';
     }
 
