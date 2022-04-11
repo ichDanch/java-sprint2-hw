@@ -1,4 +1,4 @@
-package tracker.manager;
+package manager;
 
 public enum TaskType {
     TASK,

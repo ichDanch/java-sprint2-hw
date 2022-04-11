@@ -1,18 +1,10 @@
-package tracker;
 
-import tracker.manager.*;
-import tracker.model.Epic;
-import tracker.model.Status;
-import tracker.model.Subtask;
-import tracker.model.Task;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
+import manager.*;
 
 public class Main {
     public static void main(String[] args) {
 
-        InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
+        /*InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
 
         int a = inMemoryTaskManager.addTask(new Task(
                 "a",                                                                 //array[0]
@@ -30,7 +22,7 @@ public class Main {
                 "d",
                 "desc D"));
 
-     /*   int ca = inMemoryTaskManager.addSubtask(new Subtask(
+        int ca = inMemoryTaskManager.addSubtask(new Subtask(
                 "ca",
                 "",
                 Status.NEW,
@@ -50,7 +42,7 @@ public class Main {
                 Status.IN_PROGRESS,
                 d,
                 60,
-                "09:10 12.11.2022"));*/
+                "09:10 12.11.2022"));
         int e = inMemoryTaskManager.addTask(new Task(
                 "e",
                 "desc E",
@@ -67,16 +59,16 @@ public class Main {
         System.out.println(inMemoryTaskManager.getEpic(d));
         System.out.println(inMemoryTaskManager.getTask(e));
         System.out.println(inMemoryTaskManager.getEpic(f));
-/*        System.out.println(inMemoryTaskManager.getSubtask(ca));
+        System.out.println(inMemoryTaskManager.getSubtask(ca));
         System.out.println(inMemoryTaskManager.getSubtask(cb));
-        System.out.println(inMemoryTaskManager.getSubtask(cd));*/
-        System.out.println(inMemoryTaskManager.getPrioritizedTasks());
+        System.out.println(inMemoryTaskManager.getSubtask(cd));
+        System.out.println(inMemoryTaskManager.getPrioritizedTasks());*/
 
 
-        /*FileBackedTasksManager file = new FileBackedTasksManager("save.csv");
-        file.getAllTasks();
-        System.out.println(file.getHistoryManager().getHistory());*/
-
+        FileBackedTasksManager file = new FileBackedTasksManager("save.csv");
+        file.printAllTasks();
+        System.out.println(file.getHistoryManager().getHistory());
+        System.out.println(file.getPrioritizedTasks());
         /*InMemoryTaskManager inMemoryTaskManager = new InMemoryTaskManager();
 
         int a = inMemoryTaskManager.addTask(new Task("a", "", Status.DONE));

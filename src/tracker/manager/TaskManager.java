@@ -1,10 +1,11 @@
-package tracker.manager;
+package manager;
 
-import tracker.model.Epic;
-import tracker.model.Subtask;
-import tracker.model.Task;
+import model.Epic;
+import model.Subtask;
+import model.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -18,10 +19,13 @@ public interface TaskManager {
 
     int addSubtask(Subtask subtask);
 
-    // добавить subtask по id в epic по id
-    void addSubtaskToEpic(int idEpic, int idSubtask);
+    void printAllTasks();
 
-    void getAllTasks();
+    List<Task> getTasks();
+
+    List<Epic> getEpics();
+
+    List<Subtask> getSubtasks();
 
     ArrayList<Subtask> getAllSubtasksParentEpic(int idParentEpic);
 

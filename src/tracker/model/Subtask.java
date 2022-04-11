@@ -1,6 +1,7 @@
-package tracker.model;
+package model;
 
-import tracker.manager.InMemoryTaskManager;
+
+import manager.InMemoryTaskManager;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -19,6 +20,17 @@ public class Subtask extends Task {
         this.description = description;
         this.id = InMemoryTaskManager.getID() + 1;
         InMemoryTaskManager.setID(this.id);
+        this.status = status;
+        this.idParentEpic = idParentEpic;
+        this.duration = Duration.ofMinutes(duration);
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+    }
+
+    public Subtask(int id, String name, String description, Status status, int idParentEpic, int duration, String startTime) {
+        this.id = id;
+        InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
+        this.name = name;
+        this.description = description;
         this.status = status;
         this.idParentEpic = idParentEpic;
         this.duration = Duration.ofMinutes(duration);

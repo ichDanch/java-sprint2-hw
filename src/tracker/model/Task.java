@@ -1,6 +1,6 @@
-package tracker.model;
+package model;
 
-import tracker.manager.InMemoryTaskManager;
+import manager.InMemoryTaskManager;
 
 import javax.swing.text.html.Option;
 import java.time.Duration;
@@ -16,9 +16,7 @@ public class Task {
     protected Status status;
     protected Duration duration = Duration.ofMinutes(0);
     protected Optional<LocalDateTime> startTime = Optional.empty();
-
     protected DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
-
     public Task() {
     }
 
@@ -27,6 +25,16 @@ public class Task {
         this.description = description;
         this.id = InMemoryTaskManager.getID() + 1;
         InMemoryTaskManager.setID(this.id);
+        this.status = status;
+        this.duration = Duration.ofMinutes(duration);
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+    }
+
+    public Task(int id, String name, String description, Status status, int duration, String startTime) {
+        this.id = id;
+        InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
+        this.name = name;
+        this.description = description;
         this.status = status;
         this.duration = Duration.ofMinutes(duration);
         this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
@@ -46,6 +54,10 @@ public class Task {
 
     public Optional<LocalDateTime> getStartTime() {
         return startTime;
+    }
+
+    public Duration getDuration() {
+        return duration;
     }
 
     public String getName() {

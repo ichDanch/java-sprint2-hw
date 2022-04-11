@@ -1,8 +1,7 @@
-package tracker.model;
+package model;
 
 import com.sun.source.tree.IfTree;
-import tracker.manager.InMemoryTaskManager;
-
+import manager.InMemoryTaskManager;
 import javax.swing.text.html.Option;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -19,14 +18,14 @@ public class Epic extends Task {
         this.description = description;
         this.id = InMemoryTaskManager.getID() + 1;
         InMemoryTaskManager.setID(this.id);
-
+        recalculateStatus();
     }
 
-    public Epic(String name, String description, Status status) {
+    public Epic(int id,String name, Status status, String description) {
+        this.id = id;
+        InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
         this.name = name;
         this.description = description;
-        this.id = InMemoryTaskManager.getID() + 1;
-        InMemoryTaskManager.setID(this.id);
         this.status = status;
     }
 
@@ -89,11 +88,6 @@ public class Epic extends Task {
     @Override
     public String getDescription() {
         return this.description;
-    }
-
-    @Override
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     @Override

@@ -1,6 +1,6 @@
-package tracker.manager;
+package manager;
 
-import tracker.model.Task;
+import model.Task;
 
 import java.util.*;
 
@@ -43,11 +43,15 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     @Override
     public void add(Task task) {
-        if (history.containsKey(task.getId())) {
+        if(task == null) {
+            System.out.println("Такого ID нет");
+            return;
+        } else if (history.containsKey(task.getId())) {
             removeNode(history.get(task.getId()));
         }
         linkLast(task);
         history.put(task.getId(), tail);
+
     }
 
     @Override
