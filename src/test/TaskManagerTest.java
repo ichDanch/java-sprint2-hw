@@ -1,4 +1,3 @@
-import manager.InMemoryHistoryManager;
 import manager.TaskManager;
 import model.Epic;
 import model.Status;
@@ -9,12 +8,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public abstract class TaskManagerTest<T extends TaskManager> {
     T taskManager;
@@ -40,7 +41,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    public void epicHaveStatusAndSubtaskHaveEpic() {
+    public void shouldHaveStatusAtEpicAndSubtaskHaveEpic() {
         Epic epic = new Epic("d", "desc D");
         int epicId = taskManager.addEpic(epic);
         Subtask subtask = new Subtask("ca", "desc", Status.DONE, epicId, 240,
@@ -58,7 +59,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
 
     @Test
-    public void createTaskAddTaskGetTaskGetTasksCheckListTasks() {
+    public void shouldCreateTaskAddTaskGetTaskGetTasksCheckListTasks() {
         Task task = new Task("a", "desc A", Status.DONE, 300,
                 "10:15 12.12.2022");
         int taskId = taskManager.addTask(task);
@@ -75,7 +76,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    public void createEpicAddEpicGetEpicGetEpicsCheckListEpicsCheckSubtasksList() {
+    public void shouldCreateEpicAddEpicGetEpicGetEpicsCheckListEpicsCheckSubtasksList() {
         Epic epic = new Epic("d", "desc D");
         int epicId = taskManager.addEpic(epic);
         Task expectedEpic = taskManager.getEpic(epicId);
@@ -103,7 +104,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    public void createSubtaskAddSubtaskGetSubtaskGetSubtasksCheckListSubtasksGetIdParentEpic() {
+    public void shouldCreateSubtaskAddSubtaskGetSubtaskGetSubtasksCheckListSubtasksGetIdParentEpic() {
         Epic epic = new Epic("d", "desc D");
         int epicId = taskManager.addEpic(epic);
         Subtask subtask = new Subtask("ca", "desc", Status.DONE, epicId, 240,
@@ -123,21 +124,26 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         int idParentEpic = subtask.getIdParentEpic();
 
         Assertions.assertEquals(epicId, idParentEpic);
-
-        String string = "Указан ID несуществующего эпика при создании сабтаска " + subtask.getName() +
-                " и попытке поместить сабтаск в лист эпика";
     }
 
-    /*@Test
+    @Test
     public void wrongEpicIdWhenCreatingSubtask() {
         Subtask subtask = new Subtask("ca", "desc", Status.DONE, 5, 240,
                 "09:15 13.11.2022");
-        int subtaskId = taskManager.addSubtask(subtask);
 
-        String string = "Указан ID несуществующего эпика при создании сабтаска " + subtask.getName() +
-                " и попытке поместить сабтаск в лист эпика";
-        Assertions.assertEquals(string,taskManager.getSubtask(subtaskId));
-    }*/
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                new Executable() {
+                    @Override
+                    public void execute() {
+                        taskManager.addSubtask(subtask);
+                    }
+                });
+        String expected = "Указан неверный ID EPICa при создании сабтаска "
+                + "[" + subtask.getName() + "]";
+
+        Assertions.assertEquals(expected, exception.getMessage());
+    }
 
 
     @Test
@@ -160,16 +166,26 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         Assertions.assertEquals(expectedTasks, receivedTask);
     }
 
-    /*@Test
+    @Test
     public void checkTimeCrossing() {
-        // создать два таска которые пересекаются во времени и два которые не пересекаются и сравнить с сообщением
         Task task1 = new Task("a", "desc A", Status.DONE, 60,
                 "10:15 12.12.2022");
         int taskId1 = taskManager.addTask(task1);
         Task task2 = new Task("a", "desc A", Status.DONE, 60,
-                "09:15 12.12.2022");
-        int taskId2 = taskManager.addTask(task2);
-    }*/
+                "09:20 12.12.2022");
+
+        final IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                new Executable() {
+                    @Override
+                    public void execute() {
+                        taskManager.addTask(task2);
+                    }
+                });
+        String expected = "TASK" + " [" + task2.getName() + "] " + "не был добавлен.";
+
+        Assertions.assertEquals(expected, exception.getMessage());
+    }
 
     @Test
     public void getAllSubtasksParentEpic() {
@@ -210,7 +226,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    public void updateSubtask() {
+    public void shouldBeEqualsEpicsSubtasksListWhenUpdateSubtask() {
         Epic epic = new Epic("epic", "descEpic");
         int epicId = taskManager.addEpic(epic);
         Subtask subtask1 = new Subtask("subtask1", "descSubtask1", Status.DONE, epicId, 240,
@@ -220,7 +236,7 @@ public abstract class TaskManagerTest<T extends TaskManager> {
         Assertions.assertEquals(epic.getSubtasksList().get(0), taskManager.getSubtask(subtaskId1));
 
         taskManager.updateSubtask(new Subtask("updateSubtask", "updateSubtask", Status.NEW, epicId, 60,
-                "10:15 13.11.2022"));
+                "10:15 14.11.2022"));
 
         Assertions.assertEquals(epic.getSubtasksList().get(0), taskManager.getSubtask(subtaskId1));
     }
@@ -269,76 +285,5 @@ public abstract class TaskManagerTest<T extends TaskManager> {
 
         outputStreamHand.reset();
     }
-
-    @Test
-    public void addSubtaskToEpicWithEpicsWrongId() {
-        Subtask subtask1 = new Subtask("subtask1", "descSubtask1", Status.DONE, 5, 240,
-                "09:15 13.11.2022");
-        int subtaskId1 = taskManager.addSubtask(subtask1);
-
-        String actualOut = outputStreamHand.toString();
-
-        Assertions.assertEquals("Указан неверный ID эпика при создании сабтаска " +
-                subtask1.getName() + "\r\n", actualOut);
-
-        outputStreamHand.reset();
-    }
-
-    @Test
-    public void historyManagerAddTaskLinkLastGetHistory() {
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
-        Task task1 = new Task("a", "desc A", Status.DONE, 300,
-                "10:15 12.12.2022");
-        Task task2 = new Task("b", "desc B", Status.DONE, 300,
-                "13:15 12.12.2022");
-        List<Task> tasks = List.of(task2,task1);
-        taskManager.addTask(task2);
-        taskManager.addTask(task1);
-        taskManager.getTask(task2.getId());
-        taskManager.getTask(task1.getId());
-
-        List <Task> historyTasks = taskManager.getHistoryManager().getHistory();
-
-        Assertions.assertEquals(tasks,historyTasks);
-    }
-
-    @Test
-    public void emptyHistoryManagerGetHistory() {
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
-        List<Task> tasks = new ArrayList<>();
-
-        taskManager.getTask(1);
-        taskManager.getTask(2);
-
-        String actualOut = outputStreamHand.toString();
-
-        Assertions.assertEquals("Такого ID нет\r\nТакого ID нет\r\n", actualOut);
-
-        List <Task> historyTasks = taskManager.getHistoryManager().getHistory();
-
-        Assertions.assertEquals(tasks,historyTasks);
-
-        outputStreamHand.reset();
-    }
-
-    @Test
-    public void duplicateTasksHistoryManagerAddTaskLinkLastGetHistory() {
-
-        // обкатать этот метод по добавлению дубликатов
-        InMemoryTaskManager taskManager = new InMemoryTaskManager();
-        Task task1 = new Task(2,"a", "desc A", Status.DONE, 300,
-                "10:15 12.12.2022");
-        Task task2 = new Task(2,"b", "desc B", Status.DONE, 300,
-                "13:15 12.12.2022");
-        List<Task> tasks = List.of(task2,task1);
-
-        taskManager.getHistoryManager().add(task2);
-        taskManager.getHistoryManager().add(task1);
-
-        List <Task> historyTasks = taskManager.getHistoryManager().getHistory();
-
-        Assertions.assertEquals(tasks,historyTasks);
-    }
-
 
 }

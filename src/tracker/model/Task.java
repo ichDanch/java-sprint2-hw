@@ -2,11 +2,9 @@ package model;
 
 import manager.InMemoryTaskManager;
 
-import javax.swing.text.html.Option;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
 import java.util.Optional;
 
 public class Task {
@@ -37,6 +35,24 @@ public class Task {
         this.description = description;
         this.status = status;
         this.duration = Duration.ofMinutes(duration);
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+    }
+
+    public Task(int id, String name, String description, Status status, int duration) {
+        this.id = id;
+        InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.duration = Duration.ofMinutes(duration);
+    }
+
+    public Task(int id, String name, String description, Status status, String startTime) {
+        this.id = id;
+        InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
+        this.name = name;
+        this.description = description;
+        this.status = status;
         this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
     }
 
@@ -98,6 +114,33 @@ public class Task {
                 ", duration=" + duration +
                 ", startTime=" + startTime +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Task)) return false;
+
+        Task task = (Task) o;
+
+        if (getId() != task.getId()) return false;
+        if (getName() != null ? !getName().equals(task.getName()) : task.getName() != null) return false;
+        if (getDescription() != null ? !getDescription().equals(task.getDescription()) : task.getDescription() != null)
+            return false;
+        if (getStatus() != task.getStatus()) return false;
+        if (!getDuration().equals(task.getDuration())) return false;
+        return getStartTime().equals(task.getStartTime());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getName() != null ? getName().hashCode() : 0;
+        result = 31 * result + (getDescription() != null ? getDescription().hashCode() : 0);
+        result = 31 * result + getId();
+        result = 31 * result + (getStatus() != null ? getStatus().hashCode() : 0);
+        result = 31 * result + getDuration().hashCode();
+        result = 31 * result + getStartTime().hashCode();
+        return result;
     }
 }
 

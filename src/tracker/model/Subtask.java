@@ -37,6 +37,27 @@ public class Subtask extends Task {
         this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
     }
 
+    public Subtask(int id, String name, String description, Status status, int idParentEpic, int duration) {
+        this.id = id;
+        InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.idParentEpic = idParentEpic;
+        this.duration = Duration.ofMinutes(duration);
+    }
+
+    public Subtask(int id, String name, String description, Status status, int idParentEpic, String startTime) {
+        this.id = id;
+        InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.idParentEpic = idParentEpic;
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+    }
+
+
     public Optional<LocalDateTime> getEndTime() {
         Optional<Duration> durationOp = Optional.ofNullable(duration);
         LocalDateTime endTimeOp = null;
@@ -45,7 +66,7 @@ public class Subtask extends Task {
             return Optional.of(endTimeOp);
         } else {
             System.out.println("Не заданы startTime и duration задания");
-            return Optional.ofNullable(endTimeOp);
+            return Optional.empty();
         }
     }
 

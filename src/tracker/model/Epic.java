@@ -1,10 +1,7 @@
 package model;
 
-import com.sun.source.tree.IfTree;
 import manager.InMemoryTaskManager;
-import javax.swing.text.html.Option;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -27,9 +24,21 @@ public class Epic extends Task {
         this.name = name;
         this.description = description;
         this.status = status;
+        recalculateStatus();
     }
 
-    public Epic(String name, String description, int id) {
+    public Epic(int id,String name, Status status, String description, int duration, String startTime ) {
+        this.id = id;
+        InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.duration = Duration.ofMinutes(duration);
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+        recalculateStatus();
+    }
+
+    public Epic(String name, String description, int id) {    //используется для updateTask
         this.name = name;
         this.description = description;
         this.id = id;
@@ -57,7 +66,6 @@ public class Epic extends Task {
             this.endTime = startTime.get().plus(duration);
         }
         // тоже самое startTime.ifPresent(localDateTime -> this.endTime = localDateTime.plus(duration));
-
 
         return Optional.ofNullable(this.endTime);
     }
