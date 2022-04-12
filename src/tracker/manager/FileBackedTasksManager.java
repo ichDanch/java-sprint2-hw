@@ -18,7 +18,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     protected DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
 
     public static void main(String[] args) {
-        File file = new File("save.csv");
+       /* File file = new File("save.csv");
 
         FileBackedTasksManager taskManager = new FileBackedTasksManager(file);
         int a = taskManager.addTask(new Task(
@@ -83,7 +83,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
         FileBackedTasksManager copy = new FileBackedTasksManager(file);
         copy.printAllTasks();
-        System.out.println(copy.historyManager.getHistory());
+        System.out.println(copy.historyManager.getHistory());*/
     }
 
     public FileBackedTasksManager(File file) { // читаем файл
