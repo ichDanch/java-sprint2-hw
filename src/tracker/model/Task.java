@@ -14,7 +14,7 @@ public class Task {
     protected Status status;
     protected Duration duration = Duration.ofMinutes(0);
     protected Optional<LocalDateTime> startTime = Optional.empty();
-    protected DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
+    protected transient DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
     public Task() {
     }
 

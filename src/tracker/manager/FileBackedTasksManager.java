@@ -1,5 +1,6 @@
 package manager;
 
+import com.google.gson.Gson;
 import exception.ManagerSaveException;
 import model.Epic;
 import model.Status;
@@ -16,75 +17,6 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private File file;
     protected DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
-
-    public static void main(String[] args) {
-       /* File file = new File("save.csv");
-
-        FileBackedTasksManager taskManager = new FileBackedTasksManager(file);
-        int a = taskManager.addTask(new Task(
-                "a",
-                "desc A",
-                Status.DONE,
-                300,
-                "10:15 12.12.2022"));
-        int b = taskManager.addTask(new Task(
-                "b",
-                "desc B",
-                Status.NEW,
-                240,
-                "09:05 11.11.2022"));
-        int d = taskManager.addEpic(new Epic(
-                "d",
-                "desc D"));
-
-        int ca = taskManager.addSubtask(new Subtask(
-                "ca",
-                "",
-                Status.DONE,
-                d,
-                240,
-                "09:15 13.11.2022"));
-        int f = taskManager.addEpic(new Epic(
-                "f",
-                "desc F"));
-        int cb = taskManager.addSubtask(new Subtask(
-                "cb",
-                "",
-                Status.DONE,
-                d,
-                180,
-                "09:15 17.11.2022"));
-        int cd = taskManager.addSubtask(new Subtask(
-                "cd",
-                "",
-                Status.DONE,
-                d,
-                60,
-                "09:10 12.11.2022"));
-        int e = taskManager.addTask(new Task(
-                "e",
-                "desc E",
-                Status.NEW,
-                60,
-                "07:55 12.12.2022"));
-
-        System.out.println(taskManager.getTask(a));
-        System.out.println(taskManager.getTask(b));
-        System.out.println(taskManager.getEpic(d));
-        System.out.println(taskManager.getTask(e));
-        System.out.println(taskManager.getEpic(f));
-        System.out.println(taskManager.getSubtask(ca));
-        System.out.println(taskManager.getSubtask(cb));
-        System.out.println(taskManager.getSubtask(cd));
-        System.out.println(taskManager.getPrioritizedTasks());
-
-        taskManager.printAllTasks();
-        System.out.println(taskManager.historyManager.getHistory());
-
-        FileBackedTasksManager copy = new FileBackedTasksManager(file);
-        copy.printAllTasks();
-        System.out.println(copy.historyManager.getHistory());*/
-    }
 
     public FileBackedTasksManager(File file) { // читаем файл
         this.file = file;
@@ -443,4 +375,75 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         super.removeSubtask(id);
         save();
     }
+
+    public static void main(String[] args) {
+       /* File file = new File("save.csv");
+
+        FileBackedTasksManager taskManager = new FileBackedTasksManager(file);
+        int a = taskManager.addTask(new Task(
+                "a",
+                "desc A",
+                Status.DONE,
+                300,
+                "10:15 12.12.2022"));
+        int b = taskManager.addTask(new Task(
+                "b",
+                "desc B",
+                Status.NEW,
+                240,
+                "09:05 11.11.2022"));
+        int d = taskManager.addEpic(new Epic(
+                "d",
+                "desc D"));
+
+        int ca = taskManager.addSubtask(new Subtask(
+                "ca",
+                "",
+                Status.DONE,
+                d,
+                240,
+                "09:15 13.11.2022"));
+        int f = taskManager.addEpic(new Epic(
+                "f",
+                "desc F"));
+        int cb = taskManager.addSubtask(new Subtask(
+                "cb",
+                "",
+                Status.DONE,
+                d,
+                180,
+                "09:15 17.11.2022"));
+        int cd = taskManager.addSubtask(new Subtask(
+                "cd",
+                "",
+                Status.DONE,
+                d,
+                60,
+                "09:10 12.11.2022"));
+        int e = taskManager.addTask(new Task(
+                "e",
+                "desc E",
+                Status.NEW,
+                60,
+                "07:55 12.12.2022"));
+
+        System.out.println(taskManager.getTask(a));
+        System.out.println(taskManager.getTask(b));
+        System.out.println(taskManager.getEpic(d));
+        System.out.println(taskManager.getTask(e));
+        System.out.println(taskManager.getEpic(f));
+        System.out.println(taskManager.getSubtask(ca));
+        System.out.println(taskManager.getSubtask(cb));
+        System.out.println(taskManager.getSubtask(cd));
+        System.out.println(taskManager.getPrioritizedTasks());
+
+        taskManager.printAllTasks();
+        System.out.println(taskManager.historyManager.getHistory());
+
+        FileBackedTasksManager copy = new FileBackedTasksManager(file);
+        copy.printAllTasks();
+        System.out.println(copy.historyManager.getHistory());*/
+    }
+
+
 }
