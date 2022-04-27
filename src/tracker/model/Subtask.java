@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class Subtask extends Task {
 
-    private int idParentEpic;
+    protected int idParentEpic;
 
     public Subtask() {
     }
@@ -23,7 +23,7 @@ public class Subtask extends Task {
         this.status = status;
         this.idParentEpic = idParentEpic;
         this.duration = Duration.ofMinutes(duration);
-        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,FormatterStartTime.getFormatterStartTime()));
     }
 
     public Subtask(int id, String name, String description, Status status, int idParentEpic, int duration, String startTime) {
@@ -34,7 +34,7 @@ public class Subtask extends Task {
         this.status = status;
         this.idParentEpic = idParentEpic;
         this.duration = Duration.ofMinutes(duration);
-        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,FormatterStartTime.getFormatterStartTime()));
     }
 
     public Subtask(int id, String name, String description, Status status, int idParentEpic, int duration) {
@@ -54,7 +54,7 @@ public class Subtask extends Task {
         this.description = description;
         this.status = status;
         this.idParentEpic = idParentEpic;
-        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,FormatterStartTime.getFormatterStartTime()));
     }
 
 
@@ -101,7 +101,7 @@ public class Subtask extends Task {
     }
 
     public int getIdParentEpic() {
-        return idParentEpic;
+        return this.idParentEpic;
     }
 
     public void setIdParentEpic(int idParentEpic) {

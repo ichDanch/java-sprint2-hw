@@ -14,7 +14,6 @@ public class Task {
     protected Status status;
     protected Duration duration = Duration.ofMinutes(0);
     protected Optional<LocalDateTime> startTime = Optional.empty();
-    protected transient DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
     public Task() {
     }
 
@@ -25,9 +24,9 @@ public class Task {
         InMemoryTaskManager.setID(this.id);
         this.status = status;
         this.duration = Duration.ofMinutes(duration);
-        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,FormatterStartTime.getFormatterStartTime()));
     }
-
+    // для десереализации и метода fromStringToTask
     public Task(int id, String name, String description, Status status, int duration, String startTime) {
         this.id = id;
         InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
@@ -35,9 +34,9 @@ public class Task {
         this.description = description;
         this.status = status;
         this.duration = Duration.ofMinutes(duration);
-        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,FormatterStartTime.getFormatterStartTime()));
     }
-
+    // для десереализации и метода fromStringToTask, если отсутсвтует startTime
     public Task(int id, String name, String description, Status status, int duration) {
         this.id = id;
         InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
@@ -46,14 +45,14 @@ public class Task {
         this.status = status;
         this.duration = Duration.ofMinutes(duration);
     }
-
+    // для десереализации и метода fromStringToTask, если отсутсвтует duration
     public Task(int id, String name, String description, Status status, String startTime) {
         this.id = id;
         InMemoryTaskManager.setID(InMemoryTaskManager.getID() + 1);
         this.name = name;
         this.description = description;
         this.status = status;
-        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,FormatterStartTime.getFormatterStartTime()));
     }
 
     public Optional<LocalDateTime> getEndTime() {

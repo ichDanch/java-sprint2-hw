@@ -1,9 +1,11 @@
 package manager;
 
 import model.Epic;
+import model.FormatterStartTime;
 import model.Subtask;
 import model.Task;
 
+import javax.sound.midi.Soundbank;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -13,7 +15,7 @@ public class InMemoryTaskManager implements TaskManager {
     static int ID;
 
     protected final HistoryManager historyManager;
-    protected DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
+    //protected DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
     protected ComparatorStartTime comparatorStartTime = new ComparatorStartTime();
     protected TreeSet<Task> prioritizedTasks = new TreeSet<>(comparatorStartTime);
     protected HashMap<Integer, Task> tasks = new HashMap<Integer, Task>();
@@ -55,6 +57,7 @@ public class InMemoryTaskManager implements TaskManager {
             historyManager.add(tasks.get(id));
             return tasks.get(id);
         } else {
+            System.out.println("Нет TASKa с таким ID");
             throw new IllegalArgumentException("Нет TASKa с таким ID");
         }
 
@@ -111,11 +114,11 @@ public class InMemoryTaskManager implements TaskManager {
                         || (taskEndTime.isAfter(elementStartTime)
                         && taskEndTime.isBefore(elementEndTime))) {
                     System.out.println("[" + task.getName() + "] "
-                            + taskStartTime.format(formatterStartTime)
-                            + " - " + taskEndTime.format(formatterStartTime)
+                            + taskStartTime.format(FormatterStartTime.getFormatterStartTime())
+                            + " - " + taskEndTime.format(FormatterStartTime.getFormatterStartTime())
                             + " пересекается с " + "[" + element.getName() + "] "
-                            + " " + elementStartTime.format(formatterStartTime) + " - "
-                            + elementEndTime.format(formatterStartTime));
+                            + " " + elementStartTime.format(FormatterStartTime.getFormatterStartTime()) + " - "
+                            + elementEndTime.format(FormatterStartTime.getFormatterStartTime()));
                     return false;
                 }
             }
@@ -125,30 +128,35 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public int addTask(Task task) {
-        if (checkTimeCrossing(task)) {
+        if (checkTimeCrossing(task) && task != null) {
             tasks.put(task.getId(), task);
             return task.getId();
         } else {
-            throw new IllegalArgumentException("TASK" + " [" + task.getName() + "] " + "не был добавлен.");
+            throw new IllegalArgumentException("TASK" + " не был добавлен.");
         }
     }
 
     @Override
     public int addEpic(Epic epic) {
-        if (checkTimeCrossing(epic)) {
+        if (checkTimeCrossing(epic) && epic != null) {
             epics.put(epic.getId(), epic);
             return epic.getId();
         } else {
-            throw new IllegalArgumentException("EPIC" + " [" + epic.getName() + "] " + "не был добавлен.");
+            System.out.println("EPIC не был добавлен.");
+            throw new IllegalArgumentException("EPIC не был добавлен.");
         }
     }
 
     @Override
     public int addSubtask(Subtask subtask) {
-        if (checkTimeCrossing(subtask)) {
+
+        if (checkTimeCrossing(subtask) && subtask != null) {
             //поместить subtask в список последнего epica
             try {
-                epics.get(subtask.getIdParentEpic()).getSubtasksList().add(subtask);
+                int epicId = subtask.getIdParentEpic();
+                Epic currentEpic = epics.get(epicId);
+                List<Subtask> subtasksList = currentEpic.getSubtasksList();
+                subtasksList.add(subtask);
                 //пересчитать статус
                 epics.get(subtask.getIdParentEpic()).recalculateStatus();
                 epics.get(subtask.getIdParentEpic()).getEndTime();
@@ -160,7 +168,7 @@ public class InMemoryTaskManager implements TaskManager {
 
             return subtask.getId();
         } else {
-            throw new IllegalArgumentException("SUBTASK" + " [" + subtask.getName() + "] " + "не был добавлен.");
+            throw new IllegalArgumentException("SUBTASK " + "не был добавлен.");
         }
     }
 
@@ -203,7 +211,8 @@ public class InMemoryTaskManager implements TaskManager {
         if (checkTimeCrossing(task)) {
             tasks.put(task.getId(), task);
         } else {
-            throw new IllegalArgumentException("TASK" + " [" + task.getName() + "] " + "не был добавлен.");
+            System.out.println("TASK не был обновлен.");
+            throw new IllegalArgumentException("TASK не был добавлен.");
         }
     }
 
@@ -221,7 +230,8 @@ public class InMemoryTaskManager implements TaskManager {
             epic.getEndTime();
             epics.put(epic.getId(), epic);
         } else {
-            throw new IllegalArgumentException("EPIC" + " [" + epic.getName() + "] " + "не был добавлен.");
+            System.out.println("EPIC не был обновлен.");
+            throw new IllegalArgumentException("EPIC не был добавлен.");
         }
     }
 
@@ -245,46 +255,68 @@ public class InMemoryTaskManager implements TaskManager {
             epics.get(subtask.getIdParentEpic()).getEndTime();
             subtasks.put(subtask.getId(), subtask);
         } else {
-            throw new IllegalArgumentException("SUBTASK" + " [" + subtask.getName() + "] " + "не был добавлен.");
+            System.out.println("SUBTASK не был обновлен.");
+            throw new IllegalArgumentException("SUBTASK не был добавлен.");
         }
     }
 
     @Override
-    public void removeTask(int id) {
-        historyManager.remove(id);
-        tasks.remove(id);
-    }
-
-    @Override
-    public void removeEpic(int id) {
-        // удалить из subtasks объекты, находящиеся в ArrayList удаляемого епика
-        ArrayList<Subtask> list = epics.get(id).getSubtasksList();
-        for (Subtask element : list) {
-            if (subtasks.containsValue(element)) {
-                subtasks.remove(element.getId());
-                historyManager.remove(element.getId());
-            }
-        }
-        historyManager.remove(id);
-        epics.remove(id);
-
-    }
-
-    @Override
-    public void removeSubtask(int id) {
-        // удалить subtask по переданному id из Arraylist epica
-        for (Epic value : epics.values()) {
-            value.getSubtasksList().removeIf(subtask -> subtask.getId() == id);
-        }
-        if (subtasks.containsKey(id)) {
-            epics.get(subtasks.get(id).getIdParentEpic()).recalculateStatus();
-            epics.get(subtasks.get(id).getIdParentEpic()).getEndTime();
+    public boolean removeTask(int id) {
+        if (tasks.containsKey(id)) {
+            historyManager.remove(id);
+            tasks.remove(id);
+            return true;
         } else {
-            System.out.println("Сабтаска с таким ID не существует");
+            System.out.println("ТАСКа с таким id не сущестует, введите существующий id");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean removeEpic(int id) {
+        // удалить из subtasks объекты, находящиеся в ArrayList удаляемого епика
+        if (epics.containsKey(id)) {
+            ArrayList<Subtask> list = epics.get(id).getSubtasksList();
+            System.out.println(list);
+            if (list != null) {
+                for (Subtask element : list) {
+                    if (subtasks.containsValue(element)) {
+                        subtasks.remove(element.getId());
+                        historyManager.remove(element.getId());
+                    }
+                }
+            }
+            historyManager.remove(id);
+            epics.remove(id);
+            return true;
+        } else {
+            System.out.println("ЭПИКа с таким id не сущестует, введите существующий id");
+            return false;
+        }
+    }
+
+    @Override
+    public boolean removeSubtask(int id) {
+        // удалить subtask по переданному id из Arraylist epica
+        if (subtasks.containsKey(id)) {
+            for (Epic value : epics.values()) {
+                value.getSubtasksList().removeIf(subtask -> subtask.getId() == id);
+            }
+            if (subtasks.containsKey(id)) {
+                epics.get(subtasks.get(id).getIdParentEpic()).recalculateStatus();
+                epics.get(subtasks.get(id).getIdParentEpic()).getEndTime();
+            } else {
+                System.out.println("Сабтаска с таким ID не существует");
+            }
+
+            historyManager.remove(id);
+            subtasks.remove(id);
+            return true;
+        } else {
+            System.out.println("САБТАСКа с таким id не сущестует, введите существующий id");
+            return false;
         }
 
-        historyManager.remove(id);
-        subtasks.remove(id);
     }
 
     public HistoryManager getHistoryManager() {

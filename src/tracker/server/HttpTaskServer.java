@@ -1,65 +1,39 @@
-package manager;
+package server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSerializer;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import manager.FileBackedTasksManager;
 import model.*;
+import model.adapters.DurationAdapter;
+import model.adapters.LocalDateTimeAdapter;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.invoke.SerializedLambda;
 import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.List;
 
 public class HttpTaskServer {
     private static final int PORT = 8080;
     FileBackedTasksManager tasksManager;
     HttpServer httpServer;
     Gson gson = new GsonBuilder()
-            //          .registerTypeAdapter(Task.class, new LocalDateTimeAdapter())
-            //   .registerTypeAdapter(Task.class, new DurationAdapter())
-//            .registerTypeAdapter(Epic.class, new LocalDateTimeAdapter)
-//            .registerTypeAdapter(Subtask.class, new LocalDateTimeAdapter)
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .registerTypeAdapter(Duration.class, new DurationAdapter())
             .create();
-
-    public static void main(String[] args) throws IOException, InterruptedException {
-
-
-        File file = new File("save.csv");
-        FileBackedTasksManager tasksManager = new FileBackedTasksManager(file);
-        int a = tasksManager.addTask(new Task(
-                "a",
-                "desc A",
-                Status.DONE,
-                300,
-                "10:15 12.12.2022"));
-        HttpTaskServer server = new HttpTaskServer(tasksManager);
-        HttpClient client = HttpClient.newHttpClient();
-        URI url = URI.create("http://localhost:8080/tasks/task/");
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(url)
-                .GET()
-                .build();
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-    }
 
     public HttpTaskServer(FileBackedTasksManager tasksManager) {
         this.tasksManager = tasksManager;
         try {
             HttpServer httpServer = HttpServer.create();
             httpServer.bind(new InetSocketAddress(PORT), 0);
-            httpServer.createContext("/tasks", new AllTasksHandler());
+            httpServer.createContext("/tasks/", new AllTasksHandler());
             httpServer.createContext("/tasks/task", new TasksHandler());
             httpServer.createContext("/tasks/epic", new EpicsHandler());
             httpServer.createContext("/tasks/subtask", new SubtasksHandler());
@@ -68,21 +42,23 @@ public class HttpTaskServer {
             // httpServer.stop(1);
 
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("Что-то пошло не так");
         }
-
     }
 
     public class AllTasksHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
-            System.out.println("Началась обработка /tasks запроса от клиента.");
+            System.out.println("Началась обработка /tasks/ запроса от клиента.");
             int responseCode = 0;
             String response = "";
             String method = httpExchange.getRequestMethod();
 
             if (method.equals("GET")) {
-                response = gson.toJson(tasksManager.getTasks());
+                response = gson.toJson(tasksManager.getTasks()) + "\n"
+                        + gson.toJson(tasksManager.getEpics()) + "\n"
+                        + gson.toJson(tasksManager.getSubtasks());
                 responseCode = 200;
             } else {
                 System.out.println("Некорректный метод для /tasks в классе AllTasksHandler");
@@ -95,7 +71,7 @@ public class HttpTaskServer {
         }
     }
 
-    public class TasksHandler implements HttpHandler {
+    public class TasksHandler implements HttpHandler {                         // работает
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
             System.out.println("Началась обработка /tasks/task запроса от клиента.");
@@ -105,25 +81,26 @@ public class HttpTaskServer {
             String method = httpExchange.getRequestMethod();
             String query = httpExchange.getRequestURI().getQuery();
 
+            List<String> header = httpExchange.getRequestHeaders().get("X-Add-Update-Task");
             InputStream inputStream = httpExchange.getRequestBody();
             String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
             System.out.println("Тело запроса:\n" + body);
-            Task task = gson.fromJson(body, Task.class);
+
             switch (method) {
                 case "GET":
                     response = getTask(query);
                     responseCode = 200;
                     break;
                 case "POST":
-                    response = addTask(task,query);
+                    Task task = gson.fromJson(body, Task.class);
+                    response = addOrUpdateTask(task, header);
                     responseCode = 201;
                     break;
-                case "DELETE":
-                    responseCode = 204;
+                case "DELETE":                                                 // работает
+                    responseCode = deleteTask(query);
                     break;
                 default:
                     response = "Некорректный метод!";
-
             }
             httpExchange.sendResponseHeaders(responseCode, 0);
             try (OutputStream os = httpExchange.getResponseBody()) {
@@ -137,12 +114,17 @@ public class HttpTaskServer {
         public void handle(HttpExchange httpExchange) throws IOException {
 
             System.out.println("Началась обработка /tasks/epic запроса от клиента.");
-
             int responseCode = 0;
             String response = "";
             String[] path = httpExchange.getRequestURI().getPath().split("/");
             String method = httpExchange.getRequestMethod();
             String query = httpExchange.getRequestURI().getQuery();
+
+            List<String> header = httpExchange.getRequestHeaders().get("X-Add-Update-Epic");
+
+            InputStream inputStream = httpExchange.getRequestBody();
+            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            System.out.println("Тело запроса:\n" + body);
 
             switch (method) {
                 case "GET":
@@ -150,14 +132,15 @@ public class HttpTaskServer {
                     responseCode = 200;
                     break;
                 case "POST":
-
+                    Epic epic = gson.fromJson(body, Epic.class);
+                    response = addOrUpdateEpic(epic, header);
+                    responseCode = 201;
                     break;
                 case "DELETE":
-
+                    responseCode = deleteEpic(query);
                     break;
                 default:
                     response = "Некорректный метод!";
-
             }
             httpExchange.sendResponseHeaders(responseCode, 0);
             try (OutputStream os = httpExchange.getResponseBody()) {
@@ -171,27 +154,34 @@ public class HttpTaskServer {
         public void handle(HttpExchange httpExchange) throws IOException {
 
             System.out.println("Началась обработка /tasks/subtask запроса от клиента.");
-
             int responseCode = 0;
             String response = "";
             String[] path = httpExchange.getRequestURI().getPath().split("/");
             String method = httpExchange.getRequestMethod();
             String query = httpExchange.getRequestURI().getQuery();
 
+            List<String> header = httpExchange.getRequestHeaders().get("X-Add-Update-Subtask");
+
+            InputStream inputStream = httpExchange.getRequestBody();
+            String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            System.out.println("Тело запроса:\n" + body);
+
+            System.out.println("SUBTASK: ");
             switch (method) {
                 case "GET":
                     response = getSubtask(query);
                     responseCode = 200;
                     break;
                 case "POST":
-
+                    Subtask subtask = gson.fromJson(body, Subtask.class);
+                    response = addOrUpdateSubtask(subtask, header);
+                    responseCode = 201;
                     break;
                 case "DELETE":
-
+                    responseCode = deleteSubtask(query);
                     break;
                 default:
                     response = "Некорректный метод!";
-
             }
             httpExchange.sendResponseHeaders(responseCode, 0);
             try (OutputStream os = httpExchange.getResponseBody()) {
@@ -200,21 +190,54 @@ public class HttpTaskServer {
         }
     }
 
-    public String addTask (Task task,String query) {
-
-        if (query != null) {
-            String id = query.split("=")[1];
-            tasksManager.updateTask(task);
-        } else {
-            tasksManager.addTask(task);
+    public String addOrUpdateTask(Task task, List<String> header) {     // работает
+        if (header.isEmpty()) {
+            throw new IllegalArgumentException("В запросе отсутсвует заголовок");
         }
-        return gson.toJson(task.getId());
+        if (header.contains("add")) {
+            return gson.toJson(tasksManager.addTask(task));
+        } else if (header.contains("update")) {
+            tasksManager.updateTask(task);
+            return gson.toJson(task.getId());
+        } else {
+            throw new IllegalArgumentException("Заголовок" + " [" + header.get(0) + "] " + "некорректный");
+        }
+    }
+
+    public String addOrUpdateEpic(Epic epic, List<String> header) {
+        if (header.isEmpty()) {
+            throw new IllegalArgumentException("В запросе отсутсвует заголовок");
+        }
+        if (header.contains("add")) {
+            return gson.toJson(tasksManager.addEpic(epic));
+        } else if (header.contains("update")) {
+            tasksManager.updateEpic(epic);
+            return gson.toJson(epic.getId());
+        } else {
+            throw new IllegalArgumentException("Заголовок" + " [" + header.get(0) + "] " + "некорректный");
+        }
+    }
+
+    public String addOrUpdateSubtask(Subtask subtask, List<String> header) {
+
+        if (header.isEmpty()) {
+            throw new IllegalArgumentException("В запросе отсутсвует заголовок");
+        }
+        if (header.contains("add")) {
+            return gson.toJson(tasksManager.addSubtask(subtask));
+        } else if (header.contains("update")) {
+            tasksManager.updateSubtask(subtask);
+            return gson.toJson(subtask.getId());
+        } else {
+            throw new IllegalArgumentException("Заголовок" + " [" + header.get(0) + "] " + "некорректный");
+        }
     }
 
     public String getTask(String query) {
         if (query != null) {
             Integer id = extractIdFromQuery(query);
             return gson.toJson(tasksManager.getTask(id));
+
         }
         return gson.toJson(tasksManager.getTasks());
     }
@@ -231,8 +254,39 @@ public class HttpTaskServer {
         if (query != null) {
             Integer id = extractIdFromQuery(query);
             return gson.toJson(tasksManager.getSubtask(id));
+
         }
         return gson.toJson(tasksManager.getSubtasks());
+    }
+
+    public int deleteTask(String query) {
+        if (query != null) {
+            Integer id = extractIdFromQuery(query);
+            if (tasksManager.removeTask(id)) {
+                return 204;
+            }
+        }
+        return 404;
+    }
+
+    public int deleteEpic(String query) {
+        if (query != null) {
+            Integer id = extractIdFromQuery(query);
+            if (tasksManager.removeEpic(id)) {
+                return 204;
+            }
+        }
+        return 404;
+    }
+
+    public int deleteSubtask(String query) {
+        if (query != null) {
+            Integer id = extractIdFromQuery(query);
+            if (tasksManager.removeSubtask(id)) {
+                return 204;
+            }
+        }
+        return 404;
     }
 
 
@@ -240,5 +294,43 @@ public class HttpTaskServer {
         String[] split = query.split("=");
         return Integer.parseInt(split[1]);
     }
+
+    public void stop() {
+        httpServer.stop(0);
+    }
+
+ /*   public static void main(String[] args) throws IOException, InterruptedException {
+
+        File file = new File("save.csv");
+        FileBackedTasksManager tasksManager = new FileBackedTasksManager(file);
+
+
+        *//*int epicId = tasksManager.addEpic(new Epic(
+                "Epic",
+                "desc Epic"
+        ));*//*
+     *//*   int ca = tasksManager.addSubtask(new Subtask(
+                "subtask",
+                "descr Subtask",
+                Status.DONE,
+                10,
+                240,
+                "09:15 13.11.2022"));*//*
+     *//* int a = tasksManager.addTask(new Task(
+                "a",
+                "desc A",
+                Status.DONE,
+                300,
+                "10:15 12.12.2022"));*//*
+        HttpTaskServer server = new HttpTaskServer(tasksManager);
+        HttpClient client = HttpClient.newHttpClient();
+        URI url = URI.create("http://localhost:8080/tasks");
+        HttpRequest request = HttpRequest.newBuilder()
+                //       .version(HttpClient.Version.HTTP_1_1)
+                .uri(url)
+                .GET()
+                .build();
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+    }*/
 
 }

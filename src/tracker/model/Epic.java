@@ -8,13 +8,14 @@ import java.util.*;
 public class Epic extends Task {
 
     protected LocalDateTime endTime;
-    private ArrayList<Subtask> subtasksList = new ArrayList<>();
+    private transient ArrayList<Subtask> subtasksList;
 
     public Epic(String name, String description) {
         this.name = name;
         this.description = description;
         this.id = InMemoryTaskManager.getID() + 1;
         InMemoryTaskManager.setID(this.id);
+        subtasksList = new ArrayList<>();
         recalculateStatus();
     }
 
@@ -34,7 +35,7 @@ public class Epic extends Task {
         this.description = description;
         this.status = status;
         this.duration = Duration.ofMinutes(duration);
-        this.startTime = Optional.of(LocalDateTime.parse(startTime,formatterStartTime));
+        this.startTime = Optional.of(LocalDateTime.parse(startTime,FormatterStartTime.getFormatterStartTime()));
         recalculateStatus();
     }
 
@@ -117,7 +118,9 @@ public class Epic extends Task {
         int countDone = 0;
 
         for (Subtask element : subtasksList) {
-            if (element.status == Status.NEW) {
+            if (element == null) {
+                countNew++;
+            } else if (element.status == Status.NEW) {
                 countNew++;
             } else if (element.status == Status.DONE) {
                 countDone++;

@@ -42,10 +42,10 @@ public interface TaskManager {
 
     void updateSubtask(Subtask subtask);
 
-    void removeTask(int id);
+    boolean removeTask(int id);
 
-    void removeEpic(int id);
+    boolean removeEpic(int id);
 
-    void removeSubtask(int id);
+    boolean removeSubtask(int id);
 
 }

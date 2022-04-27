@@ -2,12 +2,13 @@ package manager;
 
 import com.google.gson.Gson;
 import exception.ManagerSaveException;
-import model.Epic;
-import model.Status;
-import model.Subtask;
-import model.Task;
+import model.*;
+import server.KVServer;
+import server.KVTaskClient;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URL;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,10 +17,18 @@ import java.util.List;
 public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private File file;
-    protected DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
+    //protected DateTimeFormatter formatterStartTime = DateTimeFormatter.ofPattern("HH:mm dd.MM.yyyy");
+
+    public FileBackedTasksManager() {
+
+    }
 
     public FileBackedTasksManager(File file) { // читаем файл
         this.file = file;
+        loadAllFromFile(file);
+    }
+
+    private void loadAllFromFile(File file) {
         setID(0);
         try (BufferedReader fileReader = new BufferedReader(new FileReader(file.getName()))) {
 
@@ -203,7 +212,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     + task.getDescription() + ","
                     + "empty" + ","
                     + task.getDuration().toMinutes() + ","
-                    + task.getStartTime().get().format(formatterStartTime)
+                    + task.getStartTime().get().format(FormatterStartTime.getFormatterStartTime())
                     + "\n";
         } else {
             return task.getId() + ","
@@ -228,7 +237,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     + epic.getDescription() + ","
                     + "empty" + ","
                     + epic.getDuration().toMinutes() + ","
-                    + epic.getStartTime().get().format(formatterStartTime)
+                    + epic.getStartTime().get().format(FormatterStartTime.getFormatterStartTime())
                     + "\n";
         } else if (epic.getStatus() != null) {
             return epic.getId() + ","
@@ -248,7 +257,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     + epic.getDescription() + ","
                     + "empty" + ","
                     + epic.getDuration().toMinutes() + ","
-                    + epic.getStartTime().get().format(formatterStartTime)
+                    + epic.getStartTime().get().format(FormatterStartTime.getFormatterStartTime())
                     + "\n";
         }
 
@@ -272,7 +281,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                     + subtask.getDescription() + ","
                     + subtask.getIdParentEpic() + ","
                     + subtask.getDuration().toMinutes() + ","
-                    + subtask.getStartTime().get().format(formatterStartTime)
+                    + subtask.getStartTime().get().format(FormatterStartTime.getFormatterStartTime())
                     + "\n";
         } else {
             return subtask.getId() + ","
@@ -359,21 +368,35 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     @Override
-    public void removeTask(int id) {
-        super.removeTask(id);
-        save();
+    public boolean removeTask(int id) {
+        if (super.removeTask(id)) {
+            save();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
-    public void removeEpic(int id) {
-        super.removeEpic(id);
-        save();
+    public boolean removeEpic(int id) {
+        if (super.removeEpic(id)) {
+            save();
+            return true;
+        } else {
+            return false;
+        }
+
+
     }
 
     @Override
-    public void removeSubtask(int id) {
-        super.removeSubtask(id);
-        save();
+    public boolean removeSubtask(int id) {
+        if (super.removeSubtask(id)) {
+            save();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public static void main(String[] args) {
