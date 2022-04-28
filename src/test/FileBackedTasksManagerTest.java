@@ -25,16 +25,12 @@ public class FileBackedTasksManagerTest extends TaskManagerTest<FileBackedTasksM
     }
 
     @AfterEach
-    public void clearFile() {
-        try {
+    public void clearFile() throws IOException {
             FileWriter fwOb = new FileWriter(file.getName(), false);
             PrintWriter pwOb = new PrintWriter(fwOb, false);
             pwOb.flush();
             pwOb.close();
             fwOb.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test

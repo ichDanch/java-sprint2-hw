@@ -31,20 +31,23 @@ public class HttpTaskServer {
     public HttpTaskServer(FileBackedTasksManager tasksManager) {
         this.tasksManager = tasksManager;
         try {
-            HttpServer httpServer = HttpServer.create();
-            httpServer.bind(new InetSocketAddress(PORT), 0);
+           this.httpServer = HttpServer.create(new InetSocketAddress("localhost",PORT), 0);
+            //httpServer.bind(new InetSocketAddress(PORT), 0);
             httpServer.createContext("/tasks/", new AllTasksHandler());
             httpServer.createContext("/tasks/task", new TasksHandler());
             httpServer.createContext("/tasks/epic", new EpicsHandler());
             httpServer.createContext("/tasks/subtask", new SubtasksHandler());
-            httpServer.start();
-            System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
-            // httpServer.stop(1);
+
+             //httpServer.stop(1);
 
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Что-то пошло не так");
         }
+    }
+
+    public void setTasksManager(FileBackedTasksManager tasksManager) {
+        this.tasksManager = tasksManager;
     }
 
     public class AllTasksHandler implements HttpHandler {
@@ -294,7 +297,10 @@ public class HttpTaskServer {
         String[] split = query.split("=");
         return Integer.parseInt(split[1]);
     }
-
+    public void start() {
+        httpServer.start();
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+    }
     public void stop() {
         httpServer.stop(0);
     }

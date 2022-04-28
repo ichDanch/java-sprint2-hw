@@ -10,7 +10,10 @@ import java.time.LocalDateTime;
 
 public class HttpTaskManager extends FileBackedTasksManager {
     KVTaskClient kvTaskClient;
-
+    Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .registerTypeAdapter(Duration.class, new DurationAdapter())
+            .create();
     public HttpTaskManager() {
         super();
         this.kvTaskClient = new KVTaskClient("http://localhost:8078/");
@@ -18,11 +21,6 @@ public class HttpTaskManager extends FileBackedTasksManager {
 
     @Override
     public void save() {
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
-                .registerTypeAdapter(Duration.class, new DurationAdapter())
-                .create();
-
         String jsonTasks = gson.toJson(getTasks());
         kvTaskClient.put("task", jsonTasks);
         String jsonEpics = gson.toJson(getEpics());
